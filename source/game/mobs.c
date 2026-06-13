@@ -1,4 +1,7 @@
-#include "game/game_main.h"
+#include "common/general.h"
+#include "game/map.h"
+#include "game/mobs.h"
+#include "game/textures.h"
 #ifdef SURVIVAL
 #define PAS 16
 

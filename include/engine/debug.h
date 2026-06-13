@@ -1,6 +1,10 @@
 #ifndef __DEBUG9__
 #define __DEBUG9__
 
+#include <nds.h>
+#include <stddef.h>
+#include <stdio.h>
+
 // #define DEBUGMODE
 // #define DEBUGMODE2
 // #define FATONLY
@@ -8,8 +12,6 @@
 #define FOGLIGHT
 
 #define VERSIONMAGIC 150325785
-
-int glob_time;
 
 #define     PROF_START()                \
 do {                                \
@@ -33,8 +35,6 @@ do {                                \
 #define NOGBA(_fmt, _args...) do { char nogba_buffer[256]; sprintf(nogba_buffer, _fmt, ##_args); N3DNoCashMsg(nogba_buffer); } while(0)
 
 extern int N3DNoCashMsg(const char *pText);
-
-int TESTANGLE2;
 
 void DS_Debug(char* string, ...);
 void DS_DebugPause(void);

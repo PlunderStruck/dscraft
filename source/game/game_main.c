@@ -1,4 +1,21 @@
-#include "game/game_main.h"
+#include "common/general.h"
+#include "API/font.h"
+#include "debug/stats.h"
+#include "debug/xmem.h"
+#include "engine/screenshot.h"
+#include "engine/state.h"
+#include "fat/fatfile.h"
+#include "game/controls.h"
+#include "game/displaylistlib.h"
+#include "game/environment.h"
+#include "game/interface.h"
+#include "game/jump.h"
+#include "game/map.h"
+#include "game/mobs.h"
+#include "game/player.h"
+#include "game/textures.h"
+
+int Game_FPS, Game_FrameCount, Game_VBLcount;
 
 #define minus(a) (((a)<0)?((a)+1):((a)-1))
 	
@@ -238,7 +255,7 @@ void Game_Frame(void)
 	#ifdef SURVIVAL
 		updateMobs(&map);
 	#endif
-	drawTestMap(&map);
+	drawTestMapWithPlayer(&map, &Player, updatePlayer, playerCamera);
 	
 	glPopMatrix(1);
 	

@@ -1,70 +1,22 @@
 #include "common/general.h"
+#include "engine/state.h"
+#include "engine/memory.h"
 #include "game/textures.h"
 #include "API/font.h"
 #include "API/API.h"
-#include "API/keyboard.h"
 
-bool fading;
 bool API_Updating;
-
-void API_FadeWindow(API_Entity *e)
-{
-	if(fading)API_FadeEntity(window2,31,30);
-	else API_FadeEntity(window2,1,30);
-	fading=!fading;
-}
-
-void API_AdjustAlphaWindow(API_Entity *e)
-{
-	API_FadeEntity(window2,(((APIE_SliderData*)e->data)->position*30/f32toint(e->Size.x))+1,1);
-	NOGBA("alpha : %d\n",window2->alpha);
-}
-
-void API_PutChar(u8* buffer, u8 width, char c, int xdecal)
-{
-	int i,j;
-	int charnum;
-	int x=0;
-	int y=0;
-
-	charnum=(int)(c-API_font.difference);
-	if(charnum>=0 || c==' ')
-	{
-		for(i=0;i<API_font.charsizeX;i++)
-		{
-			for(j=0;j<API_font.charsizeY;j++)
-			{
-					if(API_font.data[i+(j+charnum*API_font.charsizeY)*API_font.charsizeX]==0 || c==' ')buffer[(i+x+xdecal)+(j+y+(API_font.charsizeY+1))*width]=0;
-					else buffer[(i+x+xdecal)+(j+y+(API_font.charsizeY+1))*width]=API_font.data[i+(j+charnum*API_font.charsizeY)*API_font.charsizeX];
-			}
-		}
-	}
-}
-
-void API_Print(u8* buffer, u16 width, char* text)
-{
-	int nc=0;
-	//int line=0;
-	int charnum;
-	int c, i, j;
-	int xdecal=0;
-	NOGBA(text);
-	
-
-	for(c=0;c<strlen(text);c++)
-	{
-		charnum=(int)(text[c]-API_font.difference);
-		for(i=0;i<API_font.charsizeX;i++)
-		{
-			for(j=0;j<API_font.charsizeY;j++)
-			{
-				buffer[i+xdecal+j*width]=API_font.data[i+(j+charnum*API_font.charsizeY)*API_font.charsizeX];
-			}
-		}
-		xdecal+=API_font.charsizeX;
-		nc++;
-	}
-}
+bool API_InputLocked;
+API_function API_InputLockAllowedFunction;
+bool cull;
+bool API_DrawingOutline;
+API_EntList API_List;
+touchPosition API_Touch;
+API_Entity* buttonBlock;
+API_function API_ToCall;
+API_Entity* API_ToCallEntity;
+API_Entity* Cursor;
+API_Entity* DefaultCursor;
 
 API_Entity* API_CreateEntity(API_EntList *cl)
 {
@@ -161,8 +113,8 @@ void API_UpdateButton(void* e)
 		{
 			if(((keysUp() & KEY_TOUCH) && data->over) || ((keysUp() & KEY_A) && Cursor==e))
 			{
-				NOGBA("TOUCH, %p != %p ?",API_ToCall,&keyboardButtonPressed);
-				if(!keyboardLock || data->function==(API_function)&keyboardButtonPressed)
+				NOGBA("TOUCH, %p != %p ?",API_ToCall,API_InputLockAllowedFunction);
+				if(!API_InputLocked || data->function==API_InputLockAllowedFunction)
 				{
 					API_ToCall=(API_function)data->function;
 					API_ToCallEntity=de;
@@ -173,7 +125,7 @@ void API_UpdateButton(void* e)
 				}
 			}else if((keysHeld() & KEY_TOUCH))
 			{
-				if(!keyboardLock || data->function==(API_function)&keyboardButtonPressed)
+				if(!API_InputLocked || data->function==API_InputLockAllowedFunction)
 				{
 					if((API_Touch.px >= f32toint(de->a_Position.x)+128 && API_Touch.px < f32toint(de->a_Position.x+de->a_Size.x)+128
 					&& API_Touch.py >= f32toint(de->a_Position.y)-2 && API_Touch.py < f32toint(de->a_Position.y+de->a_Size.y)))
@@ -1232,27 +1184,6 @@ void API_DeleteEntityByFather(API_EntList *cl, API_Entity* father)
 	}while(ce!=NULL);
 }
 
-void API_DeleteEntity(API_EntList *cl, u16 id)
-{
-	API_ListElement *cn, *ce=cl->first;
-	do{
-		cn=ce->next;
-		if(ce->entity->id==id)
-		{
-			if(ce->previous!=NULL)ce->previous->next=cn;
-			else cl->first=cn;
-			if(ce->next!=NULL)ce->next->previous=ce->previous;
-			else cl->last=ce->previous;
-			if(ce->entity->data!=NULL)free(ce->entity->data);
-			if(ce->entity!=NULL)free(ce->entity);
-			if(ce!=NULL)free(ce);
-			cl->count--;
-			break;
-		}
-		ce=cn;
-	}while(ce!=NULL);
-}
-
 void API_Init()
 {
 	API_EntList *cl=&API_List;
@@ -1265,12 +1196,13 @@ void API_Init()
 	DefaultCursor=NULL;
 	loadFont(&APIfont, CHARSIZE);
 	cull=true;
-	keyboardLock=false;
+	API_InputLocked=false;
+	API_InputLockAllowedFunction=NULL;
 }
 
 void APIcall()
 {
-	if(keyboardLock && API_ToCall!=(API_function)&keyboardButtonPressed)API_ToCall=NULL;
+	if(API_InputLocked && API_ToCall!=API_InputLockAllowedFunction)API_ToCall=NULL;
 	if(API_ToCall!=NULL)API_ToCall(API_ToCallEntity);
 	API_ToCall=NULL;
 	API_ToCallEntity=NULL;

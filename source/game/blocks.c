@@ -1,4 +1,5 @@
-#include "game/game_main.h"
+#include "common/general.h"
+#include "game/block_types.h"
 
 const blockTex_struct blockTextures[]={(blockTex_struct){2,0},
 									(blockTex_struct){3,0},

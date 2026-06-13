@@ -1,6 +1,16 @@
 #ifndef MAP_9
 #define MAP_9
 
+#include "game/block_types.h"
+#include "game/vect3D.h"
+
+#ifndef MTL_IMG_TYPEDEF
+#define MTL_IMG_TYPEDEF
+typedef struct MTL_img MTL_img;
+#endif
+
+typedef struct player_struct player_struct;
+
 #define LADDERTYPE 40
 #define DOORTYPE 44
 
@@ -28,7 +38,6 @@
 #define WATERNUMBER2 4*1024
 #define WATERMIN 8
 #define WATERMAX 120
-#define WATERTYPE 239
 #define WATERSPREAD 6
 
 #define CLUSTERSIZE 4
@@ -66,11 +75,6 @@
 #define t4 NORMAL_PACK(32,-32,0)
 
 bool testBuffer;
-
-typedef struct
-{
-	int32 x, y, z;
-}vect3D;
 
 typedef struct
 {
@@ -182,81 +186,71 @@ typedef struct
 	// u8 dir;
 } __attribute__((__packed__)) water_struct;
 
-typedef struct
-{
-	u8 top, side, bottom;
-}block_struct;
-
-typedef struct
-{
-	u8 i, j;
-}blockTex_struct;
-
 extern const block_struct blocks[];
 extern const blockTex_struct blockTextures[];
 
-char packPath[255];
-char mapPath[255];
+extern char packPath[255];
+extern char mapPath[255];
 
-s16 cubeAngleX;
+extern s16 cubeAngleX;
 
-water_struct waterSpread[WATERNUMBER];
-water_struct waterToSpread[WATERNUMBER2];
-u32 waterCount, waterCursor;
-u32 waterCount2, waterCursor2;
+extern water_struct waterSpread[WATERNUMBER];
+extern water_struct waterToSpread[WATERNUMBER2];
+extern u32 waterCount, waterCursor;
+extern u32 waterCount2, waterCursor2;
 
-list_struct openList, closedList;
+extern list_struct openList, closedList;
 
-toProcessList_struct lightProcess;
+extern toProcessList_struct lightProcess;
 
-MTL_img* cursorTexture;
-MTL_img* waterTexture;
-MTL_img* blockSuperTexture;
-MTL_img *crossHair;
-u8 degradTable[8*8*5];
+extern MTL_img* cursorTexture;
+extern MTL_img* waterTexture;
+extern MTL_img* blockSuperTexture;
+extern MTL_img *crossHair;
+extern u8 degradTable[8*8*5];
 // u8 lightTable[13*13*13*6];
-u8 lightTable[16*16*16*14];
-u8 lightComputeTable[256*32];
-u8 lightSun[6];
+extern u8 lightTable[16*16*16*14];
+extern u8 lightComputeTable[256*32];
+extern u8 lightSun[6];
 
-map_struct map;
+extern map_struct map;
 
-u16 testquads;
-s8 cursorDir;
+extern u16 testquads;
+extern s8 cursorDir;
 
-vect3D waterAnim;
-u32* uvMapCur;
-u32* lightMapCur;
-u32 uvMap[256*4];
-u32 uvMapWater[4*6];
-u32 lightMap[256*14];
-u32 lightMap2[256*14];
-u32 xyMap[CLUSTERSIZE*CLUSTERSIZE*CLUSTERSIZE*14*4];
-u8 imIDtable[CLUSTERSIZE*CLUSTERSIZE*CLUSTERSIZE];
-u8 jmIDtable[CLUSTERSIZE*CLUSTERSIZE*CLUSTERSIZE];
-u8 kmIDtable[CLUSTERSIZE*CLUSTERSIZE*CLUSTERSIZE];
+extern vect3D waterAnim;
+extern u32* uvMapCur;
+extern u32* lightMapCur;
+extern u32 uvMap[256*4];
+extern u32 uvMapWater[4*6];
+extern u32 lightMap[256*14];
+extern u32 lightMap2[256*14];
+extern u32 xyMap[CLUSTERSIZE*CLUSTERSIZE*CLUSTERSIZE*14*4];
+extern u8 imIDtable[CLUSTERSIZE*CLUSTERSIZE*CLUSTERSIZE];
+extern u8 jmIDtable[CLUSTERSIZE*CLUSTERSIZE*CLUSTERSIZE];
+extern u8 kmIDtable[CLUSTERSIZE*CLUSTERSIZE*CLUSTERSIZE];
 // u8 imIDtable2[CLUSTERSIZE*CLUSTERSIZE*CLUSTERSIZE];
 // u16 jmIDtable2[CLUSTERSIZE*CLUSTERSIZE*CLUSTERSIZE];
 // u16 kmIDtable2[CLUSTERSIZE*CLUSTERSIZE*CLUSTERSIZE];
-u32 ijkmIDtable2[CLUSTERSIZE*CLUSTERSIZE*CLUSTERSIZE];
+extern u32 ijkmIDtable2[CLUSTERSIZE*CLUSTERSIZE*CLUSTERSIZE];
 
-quad_struct* cache[CACHESIZE];
-u16 cacheNumber;
-u16 cacheCursor;
-u16 cacheRecord;
+extern quad_struct* cache[CACHESIZE];
+extern u16 cacheNumber;
+extern u16 cacheCursor;
+extern u16 cacheRecord;
 
-lightsource_struct* lightCache[LIGHTCACHESIZE];
-u16 lightCacheNumber;
-u16 lightCacheCursor;
-u16 lightCacheRecord;
+extern lightsource_struct* lightCache[LIGHTCACHESIZE];
+extern u16 lightCacheNumber;
+extern u16 lightCacheCursor;
+extern u16 lightCacheRecord;
 
-u8 fogMode;
+extern u8 fogMode;
 
-bool cull;
+extern bool cull;
 
-int TESTVALUE;
-int TESTVALUE2;
-int TESTVALUE3;
+extern int TESTVALUE;
+extern int TESTVALUE2;
+extern int TESTVALUE3;
 
 bool readSectors(u32 sector, u32 number, u8* buffer);
 bool writeSectors(u32 sector, u32 number, u8* buffer);
@@ -306,12 +300,6 @@ static inline vect3D getCluster(map_struct* m, int i, int j, int k)
 	return (vect3D){(i-i%CLUSTERSIZE)/CLUSTERSIZE,(j-j%CLUSTERSIZE)/CLUSTERSIZE,(k-k%CLUSTERSIZE)/CLUSTERSIZE};
 }
 
-static inline u32 getClusterID(map_struct* m, int i, int j, int k)
-{
-	vect3D cluster=getCluster(m,i,j,k);
-	return qgetCluster(m,cluster.x,cluster.y,cluster.z);
-}
-
 // static inline u8* getBlockP(map_struct* m, int i, int j, int k)
 // {
 	// if(i<0 || j<0 || k<0/* || i>=m->size.x*/ || j>=m->size.y || k>=m->size.z)return &m->superCluster[0][0][0].data[0];
@@ -359,12 +347,6 @@ static inline bool isDoor(u8 t)
 static inline bool isOpenDoor(u8 t)
 {
 	return (t>=DOORTYPE+8 && t<DOORTYPE+16);
-}
-
-static inline bool transparent(map_struct* m, int i, int j, int k)
-{
-	u8 t=*getBlockP(m,i,j,k);
-	return (t==0 || t>=WATERTYPE || t==12 || t==13 || isLadder(t) || isDoor(t));
 }
 
 static inline bool transparent2(map_struct* m, int i, int j, int k, int i2, int j2, int k2)
@@ -493,9 +475,11 @@ static inline void releaseQuad(quad_struct** q)
 	}//test
 }
 
-void drawTestMap(map_struct* m);
+void drawTestMapWithPlayer(map_struct* m, player_struct* player, void (*updatePlayerFn)(player_struct*), void (*playerCameraFn)(player_struct*, bool));
 void globalSaveMap(map_struct* m);
 void createTestMap(map_struct* m);
 void translateSuperCluster(map_struct* m, u8 dir);
+vect3D getPointBlockPos(map_struct* m, int32 i, int32 j, int32 k);
+u8 getPointBlock(map_struct* m, int32 i, int32 j, int32 k);
 
 #endif

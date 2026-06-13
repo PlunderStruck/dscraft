@@ -1,4 +1,10 @@
-#include "game/game_main.h"
+#include "common/general.h"
+#include "engine/files.h"
+#include "game/map.h"
+#include "game/player.h"
+#include "game/environment.h"
+#include "game/iniparser.h"
+#include "game/textures.h"
 
 #define sign(a) (((a)==0)?(0):(((a)<0)?(-1):(1)))
 #define positive(a) (((a)>0)?(1):(0))
@@ -8,7 +14,6 @@ vect3D ClosestPointOnLine(vect3D vA, vect3D vD, int length, int32* dist, vect3D 
 int32 sqMagnitude(vect3D vNormal);
 int32 sqDistance(vect3D vA, vect3D vB);
 void testPoint(map_struct* m, vect3D point, vect3D* vector);
-u8 getPointBlock(map_struct* m, int32 i, int32 j, int32 k);
 
 void initPlayer(player_struct* p)
 {
@@ -389,28 +394,6 @@ void playerCamera(player_struct* p, bool environment)
 		drawCloud();
 	}
 	glTranslatef32(-p->position.x,-p->position.y,0);
-}
-
-vect3D getPointBlockPos(map_struct* m, int32 i, int32 j, int32 k)
-{
-	return (vect3D){(i+(tilesize<<6)*SCALEFACTOR+(SUPERCLUSTERSIZE*CLUSTERSIZE*rTilesize2)/2)/(rTilesize2)+m->offset.x*CLUSTERSIZE,
-	(j+(tilesize<<6)*SCALEFACTOR+(SUPERCLUSTERSIZE*CLUSTERSIZE*rTilesize2)/2)/(rTilesize2)+m->offset.y*CLUSTERSIZE,
-	(k+(tilesize<<6)*SCALEFACTOR+(m->size.z*rTilesize2)/2)/(rTilesize2)+m->offset.z*CLUSTERSIZE};
-}
-
-u8 getPointBlock(map_struct* m, int32 i, int32 j, int32 k)
-{
-	i=(i+(tilesize<<6)*SCALEFACTOR+(SUPERCLUSTERSIZE*CLUSTERSIZE*rTilesize2)/2)/(rTilesize2)+m->offset.x*CLUSTERSIZE;
-	j=(j+(tilesize<<6)*SCALEFACTOR+(SUPERCLUSTERSIZE*CLUSTERSIZE*rTilesize2)/2)/(rTilesize2)+m->offset.y*CLUSTERSIZE;
-	k=(k+(tilesize<<6)*SCALEFACTOR+(m->size.z*rTilesize2)/2)/(rTilesize2)+m->offset.z*CLUSTERSIZE;
-	// NOGBA("pos : %d",k);
-	// iprintf("\nblock %d %d %d (%d)  ",i,j,k,(*getBlockP(m,i,j,k)));
-	if(i<0 || j<0 || k<0 || i>=m->size.x || j>=m->size.y || k>=m->size.z)return 1;
-	return (*getBlockP(m,i,j,k));
-	// i-=rTilesize;
-	// j-=rTilesize;
-	// k-=rTilesize;
-	// return *getBlockP(m,(i-i%rTilesize2+(m->size.x*rTilesize2)/2)/rTilesize2,(j-j%rTilesize2+(m->size.y*rTilesize2)/2)/rTilesize2,(k-k%rTilesize2+(m->size.z*rTilesize2)/2)/rTilesize2);
 }
 
 void testPoint(map_struct* m, vect3D point, vect3D* vector)

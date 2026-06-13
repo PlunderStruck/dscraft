@@ -15,7 +15,9 @@
 */
 /*---------------------------- Includes ------------------------------------*/
 #include <ctype.h>
-#include "game/game_main.h"
+#include "common/general.h"
+#include "engine/files.h"
+#include "game/iniparser.h"
 
 /*---------------------------- Defines -------------------------------------*/
 #define ASCIILINESZ         (1024)
@@ -194,42 +196,6 @@ void iniparser_dump(dictionary * d, FILE * f)
             fprintf(f, "[%s]=[%s]\n", d->key[i], d->val[i]);
         } else {
             fprintf(f, "[%s]=UNDEF\n", d->key[i]);
-        }
-    }
-    return ;
-}
-
-void iniparser_print(dictionary * d)
-{
-    int     i ;
-
-    if (d==NULL) return ;
-	printf("\n size: %d\n",d->size);
-    for (i=0 ; i<d->size ; i++) {
-        if (d->key[i]==NULL)
-            continue ;
-        if (d->val[i]!=NULL) {
-            printf("[%s]=[%s]\n", d->key[i], d->val[i]);
-        } else {
-            printf("[%s]=UNDEF\n", d->key[i]);
-        }
-    }
-    return ;
-}
-
-void iniparser_printNOGBA(dictionary * d)
-{
-    int     i ;
-
-    if (d==NULL) return ;
-	NOGBA("\n size: %d\n",d->size);
-    for (i=0 ; i<d->size ; i++) {
-        if (d->key[i]==NULL)
-            continue ;
-        if (d->val[i]!=NULL) {
-            NOGBA("[%s]=[%s]\n", d->key[i], d->val[i]);
-        } else {
-            NOGBA("[%s]=UNDEF\n", d->key[i]);
         }
     }
     return ;
@@ -458,11 +424,6 @@ int iniparser_find_entry(
   It is Ok to set val to NULL.
  */
 /*--------------------------------------------------------------------------*/
-int iniparser_set(dictionary * ini, char * entry, char * val)
-{
-    return dictionary_set(ini, strlwc(entry), val) ;
-}
-
 /*-------------------------------------------------------------------------*/
 /**
   @brief    Delete an entry in a dictionary

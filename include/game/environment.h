@@ -1,6 +1,13 @@
 #ifndef ENVIRONMENT_9
 #define ENVIRONMENT_9
 
+#include "game/vect3D.h"
+
+#ifndef MTL_IMG_TYPEDEF
+#define MTL_IMG_TYPEDEF
+typedef struct MTL_img MTL_img;
+#endif
+
 #define STARS 32
 // #define SUNSIZE 64
 #define SUNSIZE 96
@@ -14,19 +21,19 @@ typedef struct
 	u8 size, shiny;
 }star_struct;
 
-star_struct stars[STARS];
+extern star_struct stars[STARS];
 
-MTL_img *cloudTexture, *sunTexture, *moonTexture, *dawnTexture, *crossHair;
+extern MTL_img *cloudTexture, *sunTexture, *moonTexture;
 
-int sunX, sunZ;
-int dayTime, nightTime;
+extern int sunX, sunZ;
+extern int dayTime, nightTime;
 
-u8 skyR, skyG, skyB;
-u8 glareR, glareG, glareB;
-u8 glareLength;
+extern u8 skyR, skyG, skyB;
+extern u8 glareR, glareG, glareB;
+extern u8 glareLength;
 
-bool envMenu;
-s16 cloudcnt;
+extern bool envMenu;
+extern s16 cloudcnt;
 
 void drawSky(void);
 void drawSun(void);

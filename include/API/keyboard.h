@@ -1,21 +1,15 @@
 #ifndef __KEYBOARD9__
 #define __KEYBOARD9__
 
+#include "API/API.h"
+
 #define KEYBOARDBUTTONS 39
 
-API_Entity* keyboardWindow;
-API_Entity* keyboardButton[KEYBOARDBUTTONS];
-
-static const char keyboardButtons[] = { '1','2','3','4','5','6','7','8','9','0',
-										'q','w','e','r','t','y','u','i','o','p',
-										'a','s','d','f','g','h','j','k','l',
-										'z','x','c','v','b','n','m',' '};
-						
-static const u8 keyboardRows[] = {10,10,9,7};
-char* keyboardString;
-int keyboardCursor, keyboardStrlen;
-API_drawfunction keyboardReturn;
-bool keyboardLock;
+extern API_Entity* keyboardWindow;
+extern API_Entity* keyboardButton[KEYBOARDBUTTONS];
+extern char* keyboardString;
+extern int keyboardCursor, keyboardStrlen;
+extern API_drawfunction keyboardReturn;
 
 
 void setupKeyboard(char* string, u8 stringlen, API_drawfunction r);

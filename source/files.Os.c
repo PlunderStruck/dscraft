@@ -1,10 +1,14 @@
 #include "common/general.h"
+#include "engine/error.h"
+#include "engine/files.h"
+#include "engine/state.h"
+#include "engine/memory.h"
 #include <errno.h>
 
-u32 GetFileSize(FILE *file) {
-    fseek(file, 0, SEEK_END);
-    return ftell(file);
-}
+bool saveAvailable;
+char* basePath;
+int lastSize;
+u8 fsMode;
 
 bool DS_InitFS(int argc, char **argv)
 {

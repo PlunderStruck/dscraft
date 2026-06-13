@@ -1,6 +1,8 @@
 #ifndef __FONT9__
 #define __FONT9__
 
+#include "game/textures.h"
+
 #define CHARSIZE 16
 
 typedef struct
@@ -9,7 +11,7 @@ typedef struct
 	u8 charsize;
 }font;
 
-font hudFont, APIfont;
+font APIfont;
 font* currentFont;
 
 void setFont(font* f);

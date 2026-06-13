@@ -1,9 +1,18 @@
-#include "game/game_main.h"
+#include "common/general.h"
+#include "engine/debug.h"
+#include "debug/stats.h"
+#include "lodepng.h"
+#include "fat/fatfile.h"
+#include "fat/file_allocation_table.h"
+#include "game/map.h"
+#include "game/jump.h"
+#include "game/interface_save.h"
+#include "game/player_types.h"
+#include "game/textures.h"
 
 #define waterm(a) (((a)>=WATERTYPE)?(a):(300))
 #define CLUSTER_FIRST	0x00000002
 
-bool testvar=false;
 // int cullMagic;
 u16 cullMagic;
 u8 fsFormat;
@@ -30,6 +39,22 @@ void initLightMap(void)
 	#ifdef FOGLIGHT
 		for(i=0;i<256*14;i++)lightMap2[i]=RGB15(21,21,21);
 	#endif
+}
+
+vect3D getPointBlockPos(map_struct* m, int32 i, int32 j, int32 k)
+{
+	return (vect3D){(i+(tilesize<<6)*SCALEFACTOR+(SUPERCLUSTERSIZE*CLUSTERSIZE*rTilesize2)/2)/(rTilesize2)+m->offset.x*CLUSTERSIZE,
+	(j+(tilesize<<6)*SCALEFACTOR+(SUPERCLUSTERSIZE*CLUSTERSIZE*rTilesize2)/2)/(rTilesize2)+m->offset.y*CLUSTERSIZE,
+	(k+(tilesize<<6)*SCALEFACTOR+(m->size.z*rTilesize2)/2)/(rTilesize2)+m->offset.z*CLUSTERSIZE};
+}
+
+u8 getPointBlock(map_struct* m, int32 i, int32 j, int32 k)
+{
+	i=(i+(tilesize<<6)*SCALEFACTOR+(SUPERCLUSTERSIZE*CLUSTERSIZE*rTilesize2)/2)/(rTilesize2)+m->offset.x*CLUSTERSIZE;
+	j=(j+(tilesize<<6)*SCALEFACTOR+(SUPERCLUSTERSIZE*CLUSTERSIZE*rTilesize2)/2)/(rTilesize2)+m->offset.y*CLUSTERSIZE;
+	k=(k+(tilesize<<6)*SCALEFACTOR+(m->size.z*rTilesize2)/2)/(rTilesize2)+m->offset.z*CLUSTERSIZE;
+	if(i<0 || j<0 || k<0 || i>=m->size.x || j>=m->size.y || k>=m->size.z)return 1;
+	return (*getBlockP(m,i,j,k));
 }
 
 void addWaterFace(map_struct* m, int i, int j, int k, u8 f)
@@ -951,80 +976,6 @@ static inline void addListElement(list_struct* l, u16 i, u16 j, u16 k, u8 direct
 }
 
 int olcursor;
-
-void cullClusters2(map_struct* m, list_struct* ol, list_struct* cl, int sI, int sJ, int sK)
-{
-	int i, bid, count;
-	int cx=SUPERCLUSTERSIZE, cxy=SUPERCLUSTERSIZE*SUPERCLUSTERSIZE;
-	cleanList(cl);
-	if(!testBuffer)
-	{
-		cullMagic++;
-		cleanList(ol);
-		addListElement(cl, sI, sJ, sK, 0);
-		bid=qgetCluster(m,sI,sJ,sK);m->clusterDraw[bid]=cullMagic;
-		if(sI<SUPERCLUSTERSIZE-1){addListElement(ol, sI+1, sJ, sK, dir_x);m->clusterDraw[bid+1]=cullMagic;}
-		if(sI>0){addListElement(ol, sI-1, sJ, sK, dir_x);m->clusterDraw[bid-1]=cullMagic;}
-		if(sJ<SUPERCLUSTERSIZE-1){addListElement(ol, sI, sJ+1, sK, dir_y);m->clusterDraw[bid+cx]=cullMagic;}
-		if(sJ>0){addListElement(ol, sI, sJ-1, sK, dir_y);m->clusterDraw[bid-cx]=cullMagic;}
-		if(sK<m->clusterSize.z-1){addListElement(ol, sI, sJ, sK+1, dir_z);m->clusterDraw[bid+cxy]=cullMagic;}
-		if(sK>0){addListElement(ol, sI, sJ, sK-1, dir_z);m->clusterDraw[bid-cxy]=cullMagic;}
-		olcursor=0;
-	}
-	
-	count=0;
-		i=olcursor;
-		listElement_struct *le=&ol->elements[i];
-		listElement_struct *le2=&ol->elements[i+1];
-		if(i<ol->size)BoxTest_Asynch((le->i)*bsize-(tilesize<<6),(le->j)*bsize-(tilesize<<6),(le->k)*bsize-(tilesize<<6),bsize,bsize,bsize);
-		int r, n=0;
-		// for(i=olcursor;i<ol->size && cl->size<300 && count<1700 && i-olcursor<325;i++) // test values
-		// for(i=olcursor;i+1<ol->size && n<300 && count<1700;i++) //good
-		for(i=olcursor;i+1<ol->size && n<400 && count<1700;i++) //test
-		{
-			r=BoxTestResult();
-			if(i+1<ol->size)
-			{
-				le2=&ol->elements[i+1];
-				BoxTest_Asynch((le2->i)*bsize-(tilesize<<6),(le2->j)*bsize-(tilesize<<6),(le2->k)*bsize-(tilesize<<6),bsize,bsize,bsize);
-			}
-			if(r || i<6) //test
-			{
-				bid=qgetCluster(m,le->i,le->j,le->k);
-				if((m->superCluster[le->i][le->j]->cluster[le->k].quadList.count || m->superCluster[le->i][le->j]->cluster[le->k].specialList.count) && r)addListElement(cl, le->i, le->j, le->k, 0);
-				n++;
-				m->clusterDraw[bid]=cullMagic;
-				// count+=m->cluster[bid].quadList.count;
-				count+=m->superCluster[le->i][le->j]->cluster[le->k].quadList.count+m->superCluster[le->i][le->j]->cluster[le->k].specialList.count;
-				bool d1=m->superCluster[le->i][le->j]->cluster[le->k].wall&1, d2=(m->superCluster[le->i][le->j]->cluster[le->k].wall>>1)&1, d3=(m->superCluster[le->i][le->j]->cluster[le->k].wall>>2)&1;
-				// NOGBA("ICI : %d %d %d (%d%d%d)(%d)",le->i,le->j,le->k,d1,d2,d3,m->cluster[bid].wall);
-				
-				u8 newdir=dir_x|le->direction;		
-				if(!(d3 && le->direction&dir_x))
-				{
-					if(le->i<SUPERCLUSTERSIZE-1 && m->clusterDraw[bid+1]!=cullMagic){addListElement(ol, le->i+1, le->j, le->k, newdir);m->clusterDraw[bid+1]=cullMagic;}
-					if(le->i>0 && m->clusterDraw[bid-1]!=cullMagic){addListElement(ol, le->i-1, le->j, le->k, newdir);m->clusterDraw[bid-1]=cullMagic;}
-				}
-				if(!(d2 && le->direction&dir_y))
-				{
-					newdir=dir_y|le->direction;
-					if(le->j<SUPERCLUSTERSIZE-1 && m->clusterDraw[bid+cx]!=cullMagic){addListElement(ol, le->i, le->j+1, le->k, newdir);m->clusterDraw[bid+cx]=cullMagic;}
-					if(le->j>0 && m->clusterDraw[bid-cx]!=cullMagic){addListElement(ol, le->i, le->j-1, le->k, newdir);m->clusterDraw[bid-cx]=cullMagic;}
-				}
-				if(!(d1 && le->direction&dir_z))
-				{
-					newdir=dir_z|le->direction;
-					if(le->k<m->clusterSize.z-1 && m->clusterDraw[bid+cxy]!=cullMagic){addListElement(ol, le->i, le->j, le->k+1, newdir);m->clusterDraw[bid+cxy]=cullMagic;}
-					if(le->k>0 && m->clusterDraw[bid-cxy]!=cullMagic){addListElement(ol, le->i, le->j, le->k-1, newdir);m->clusterDraw[bid-cxy]=cullMagic;}
-				}
-			}
-			le=le2;
-		}
-	olcursor=i;
-	#ifdef DEBUGMODE
-	iprintf("\nculled %d clust (%d %d %d)",cl->size,i,ol->size,count);
-	#endif
-}
 
 void cullClusters(map_struct* m, list_struct* ol, list_struct* cl, int sI, int sJ, int sK)
 {
@@ -2223,97 +2174,9 @@ void createTestMap(map_struct* m)
 	iprintf("done !\nprocessing data...");
 }
 
-void generateTestMap(map_struct* m) //NOW INVALID, SORRY. (requires blank file generation for writeClusterColumn to work)
-{
-	/*int i, j, k;
-	
-	iprintf("\ngenerating basic terrain...");
-	
-	int x8, y8, z8, i8, j8, i2, j2;
-	x8=1024/8;
-	y8=1024/8;
-	// u8 height[x8+1][y8+1];
-	u8 height[129][129];
-	
-	for(i8=0;i8<=x8;i8++)
-	{
-		iprintf("%d,",i8);
-		for(j8=0;j8<=y8;j8++)
-		{
-			height[i8][j8]=(rand()%12)+26;
-		}
-	}
-	int n,l=0,o,p;
-	u8 tree;
-	FILE*f=fopen("fat:/testmap.map","wb+");
-	for(o=0;o<8;o++)
-	{
-		for(p=0;p<8;p++)
-		{
-			iprintf("done\ngenerating supercluster %d...",l);
-			for(i=0;i<m->size.x;i++)for(j=0;j<m->size.y;j++)for(k=0;k<m->size.z;k++)(*getBlockP(m,i,j,k))=0;
-			for(i8=o*16;i8<16+o*16;i8++)
-			{
-				for(j8=0+p*16;j8<16+p*16;j8++)
-				{
-					n=0;
-					for(i2=0;i2<8;i2++)
-					{
-						for(j2=0;j2<8;j2++)
-						{
-							i=i2+i8*8-o*128;
-							j=j2+j8*8-p*128;
-							n=(i2+j2*8)*5;
-							u8 v=((((degradTable[n]*height[i8][j8]))+((degradTable[n+1]*height[i8+1][j8]))+((degradTable[n+2]*height[i8+1][j8+1]))+((degradTable[n+3]*height[i8][j8+1])))*degradTable[n+4])>>14;
-							tree=!(rand()%500);
-							if(tree)tree=3+rand()%3;
-							// NOGBA("v : %d",v);
-							for(k=0;k<m->size.z;k++)
-							{
-								if(k<3)(*getBlockP(m,i,j,k))=5;
-								else if(k<v-3)(*getBlockP(m,i,j,k))=3;
-								else if(k<v)(*getBlockP(m,i,j,k))=1;
-								else if(tree && k-v<tree)(*getBlockP(m,i,j,k))=8;
-								else if(tree && k-v<tree+2){(*getBlockP(m,i,j,k))=10;
-															(*getBlockP(m,i+1,j,k))=10;
-															(*getBlockP(m,i-1,j,k))=10;
-															(*getBlockP(m,i,j+1,k))=10;
-															(*getBlockP(m,i,j-1,k))=10;
-															(*getBlockP(m,i,j,k+1))=10;}
-								else if((*getBlockP(m,i,j,k))!=10)(*getBlockP(m,i,j,k))=0;
-							}
-							// n+=5;
-						}
-					}
-				}
-			}
-			iprintf("done\nwriting supercluster %d...",l);
-			for(j8=0;j8<32;j8++)
-			{
-				// fseek(f,((sizeof(cluster_struct)*16+(4*4*4)*16))*(o*32)+((sizeof(cluster_struct)*16+(4*4*4)*16)*(32*2))*(j8+(p*32)),SEEK_SET);
-				fseek(f,(((4*4*4)*16+(4*4*4)*16))*(o*32)+(((4*4*4)*16+(4*4*4)*16)*(32*8))*(j8+(p*32)),SEEK_SET);
-				for(i8=0;i8<32;i8++)
-				{
-					for(k=0;k<16;k++)renderClusterList(m, i8, j8, k);
-					writeClusterColumn(m, i8, j8, m->superCluster[i8][j8], m->transitionStuff, f);
-				}			
-			}
-			l++;
-		}
-	}
-	fclose(f);
-	
-	iprintf("done !\nprocessing data...");*/
-}
-
 FILE_POSITION _FAT_getPosition(u32* pos);
 uint32_t _FAT_setPosition(FILE_POSITION np, uint32_t pos);
 
-static inline sec_t clusterToSector(PARTITION* partition, uint32_t cluster){
-	return (cluster >= CLUSTER_FIRST) ? 
-		((cluster - CLUSTER_FIRST) * (sec_t)partition->sectorsPerCluster) + partition->dataStart : 
-		partition->rootDirStart;
-}
 // FILE_STRUCT* fZ;
 
 void openMap2048(char* filename, map_struct* m)
@@ -2739,8 +2602,6 @@ void updateLightMap(void)
 	#endif
 }
 
-u8 lasttype;
-
 void drawTestQuadOpt(map_struct* m, quad_struct* q)
 {
 	#ifdef DEBUGMODE
@@ -2791,12 +2652,6 @@ void drawCursor(map_struct* m, int i, int j, int k)
 		glBegin(GL_QUADS);
 		drawTestQuadOpt(m, &q);
 	glPopMatrix(1);
-}
-
-void drawCluster(cluster_struct* c)
-{
-	// if(c->list)glCallList(c->list);
-	testquads+=c->quadList.count;
 }
 
 void renderClusterList(map_struct* m, int x, int y, int z)
@@ -2870,13 +2725,6 @@ void drawTestCluster(cluster_struct* c, int i, int j, int k)
 	// BoxTest(i*bsize-(tilesize<<6),j*bsize-(tilesize<<6),k*bsize-(tilesize<<6),bsize,bsize,bsize);
 }
 
-void generateDisplayLists(map_struct* m)
-{
-	int i, j, k;
-	for(i=0;i<SUPERCLUSTERSIZE;i++)for(j=0;j<SUPERCLUSTERSIZE;j++)for(k=0;k<m->clusterSize.z;k++)renderClusterList(m, i, j, k);
-	NOGBA("after lists RAM : %dko used, %dko free    \n",DS_UsedMem()/1024,DS_FreeMem()/1024);
-}
-
 void writeMapHeader(map_struct* m)
 {
 	m->header->magicVersionNumber=VERSIONMAGIC;
@@ -2923,129 +2771,6 @@ void globalSaveMap(map_struct* m)
 
 int maT1, maT2, miT1, miT2;
 int rt1, rt2;
-
-void captureQuadOpt(map_struct* m, quad_struct* q, u16 x, u16 y, u16 z)
-{
-	u32* uv=&uvMap[q->type<<2];
-	// u32* vert=&xyMap[q->lID];
-	// const u16 d=(q->direction<<8);
-	// u32* vert=&xyMap[(q->mID<<2)+d];
-	// glColorDL(lightMap[d+q->light]);	
-	
-	int i, j, k;
-	i=imIDtable[q->mID];
-	j=jmIDtable[q->mID];
-	k=kmIDtable[q->mID];
-	int32 x2=(Player.position.x/SCALEFACTOR)>>6;
-	int32 y2=(Player.position.y/SCALEFACTOR)>>6;
-	int32 z2=(Player.position.z/SCALEFACTOR)>>6;
-	
-	switch(q->direction)
-	{
-		case 0:
-			glNormalDL(NORMAL_PACK(0,0,inttov10(1)-1));
-			glTexCoordPACKED(*uv);
-			glVertexPackedDL(NORMAL_PACK((tilesize+tilesize2*i)+x*bsizeR-x2,(-tilesize+tilesize2*j)+y*bsizeR-y2,(tilesize+tilesize2*k)+z*bsizeR-z2));
-			glTexCoordPACKED(*(++uv));
-			glVertexPackedDL(NORMAL_PACK((tilesize+tilesize2*i)+x*bsizeR-x2,(tilesize+tilesize2*j)+y*bsizeR-y2,(tilesize+tilesize2*k)+z*bsizeR-z2));
-			glTexCoordPACKED(*(++uv));
-			glVertexPackedDL(NORMAL_PACK((-tilesize+tilesize2*i)+x*bsizeR-x2,(tilesize+tilesize2*j)+y*bsizeR-y2,(tilesize+tilesize2*k)+z*bsizeR-z2));
-			glTexCoordPACKED(*(++uv));
-			glVertexPackedDL(NORMAL_PACK((-tilesize+tilesize2*i)+x*bsizeR-x2,(-tilesize+tilesize2*j)+y*bsizeR-y2,(tilesize+tilesize2*k)+z*bsizeR-z2));
-			break;
-		case 1:
-			glNormalDL(NORMAL_PACK(0,0,inttov10(-1)));
-			glTexCoordPACKED(*uv);
-			glVertexPackedDL(NORMAL_PACK((-tilesize+tilesize2*i)+x*bsizeR-x2,(-tilesize+tilesize2*j)+y*bsizeR-y2,(-tilesize+tilesize2*k)+z*bsizeR-z2));
-			glTexCoordPACKED(*(++uv));
-			glVertexPackedDL(NORMAL_PACK((-tilesize+tilesize2*i)+x*bsizeR-x2,(tilesize+tilesize2*j)+y*bsizeR-y2,(-tilesize+tilesize2*k)+z*bsizeR-z2));
-			glTexCoordPACKED(*(++uv));
-			glVertexPackedDL(NORMAL_PACK((tilesize+tilesize2*i)+x*bsizeR-x2,(tilesize+tilesize2*j)+y*bsizeR-y2,(-tilesize+tilesize2*k)+z*bsizeR-z2));
-			glTexCoordPACKED(*(++uv));
-			glVertexPackedDL(NORMAL_PACK((tilesize+tilesize2*i)+x*bsizeR-x2,(-tilesize+tilesize2*j)+y*bsizeR-y2,(-tilesize+tilesize2*k)+z*bsizeR-z2));
-			break;
-		case 2:
-			glNormalDL(NORMAL_PACK(0,inttov10(1)-1,0));
-			glTexCoordPACKED(*uv);
-			glVertexPackedDL(NORMAL_PACK((tilesize+tilesize2*i)+x*bsizeR-x2,(tilesize+tilesize2*j)+y*bsizeR-y2,(tilesize+tilesize2*k)+z*bsizeR-z2));
-			glTexCoordPACKED(*(++uv));
-			glVertexPackedDL(NORMAL_PACK((tilesize+tilesize2*i)+x*bsizeR-x2,(-tilesize+tilesize2*j)+y*bsizeR-y2,(tilesize+tilesize2*k)+z*bsizeR-z2));
-			glTexCoordPACKED(*(++uv));
-			glVertexPackedDL(NORMAL_PACK((tilesize+tilesize2*i)+x*bsizeR-x2,(-tilesize+tilesize2*j)+y*bsizeR-y2,(-tilesize+tilesize2*k)+z*bsizeR-z2));
-			glTexCoordPACKED(*(++uv));
-			glVertexPackedDL(NORMAL_PACK((tilesize+tilesize2*i)+x*bsizeR-x2,(tilesize+tilesize2*j)+y*bsizeR-y2,(-tilesize+tilesize2*k)+z*bsizeR-z2));
-			break;
-		case 3:
-			glNormalDL(NORMAL_PACK(0,inttov10(-1),0));
-			glTexCoordPACKED(*uv);
-			glVertexPackedDL(NORMAL_PACK((-tilesize+tilesize2*i)+x*bsizeR-x2,(-tilesize+tilesize2*j)+y*bsizeR-y2,(tilesize+tilesize2*k)+z*bsizeR-z2));
-			glTexCoordPACKED(*(++uv));
-			glVertexPackedDL(NORMAL_PACK((-tilesize+tilesize2*i)+x*bsizeR-x2,(tilesize+tilesize2*j)+y*bsizeR-y2,(tilesize+tilesize2*k)+z*bsizeR-z2));
-			glTexCoordPACKED(*(++uv));
-			glVertexPackedDL(NORMAL_PACK((-tilesize+tilesize2*i)+x*bsizeR-x2,(tilesize+tilesize2*j)+y*bsizeR-y2,(-tilesize+tilesize2*k)+z*bsizeR-z2));
-			glTexCoordPACKED(*(++uv));
-			glVertexPackedDL(NORMAL_PACK((-tilesize+tilesize2*i)+x*bsizeR-x2,(-tilesize+tilesize2*j)+y*bsizeR-y2,(-tilesize+tilesize2*k)+z*bsizeR-z2));
-			break;
-		case 4:
-			glNormalDL(NORMAL_PACK(inttov10(1)-1,0,0));
-			glTexCoordPACKED(*uv);
-			glVertexPackedDL(NORMAL_PACK((-tilesize+tilesize2*i)+x*bsizeR-x2,(tilesize+tilesize2*j)+y*bsizeR-y2,(tilesize+tilesize2*k)+z*bsizeR-z2));
-			glTexCoordPACKED(*(++uv));
-			glVertexPackedDL(NORMAL_PACK((tilesize+tilesize2*i)+x*bsizeR-x2,(tilesize+tilesize2*j)+y*bsizeR-y2,(tilesize+tilesize2*k)+z*bsizeR-z2));
-			glTexCoordPACKED(*(++uv));
-			glVertexPackedDL(NORMAL_PACK((tilesize+tilesize2*i)+x*bsizeR-x2,(tilesize+tilesize2*j)+y*bsizeR-y2,(-tilesize+tilesize2*k)+z*bsizeR-z2));
-			glTexCoordPACKED(*(++uv));
-			glVertexPackedDL(NORMAL_PACK((-tilesize+tilesize2*i)+x*bsizeR-x2,(tilesize+tilesize2*j)+y*bsizeR-y2,(-tilesize+tilesize2*k)+z*bsizeR-z2));
-			break;
-		case 5:
-			glNormalDL(NORMAL_PACK(inttov10(-1),0,0));
-			glTexCoordPACKED(*uv);
-			glVertexPackedDL(NORMAL_PACK((tilesize+tilesize2*i)+x*bsizeR-x2,(-tilesize+tilesize2*j)+y*bsizeR-y2,(tilesize+tilesize2*k)+z*bsizeR-z2));
-			glTexCoordPACKED(*(++uv));
-			glVertexPackedDL(NORMAL_PACK((-tilesize+tilesize2*i)+x*bsizeR-x2,(-tilesize+tilesize2*j)+y*bsizeR-y2,(tilesize+tilesize2*k)+z*bsizeR-z2));
-			glTexCoordPACKED(*(++uv));
-			glVertexPackedDL(NORMAL_PACK((-tilesize+tilesize2*i)+x*bsizeR-x2,(-tilesize+tilesize2*j)+y*bsizeR-y2,(-tilesize+tilesize2*k)+z*bsizeR-z2));
-			glTexCoordPACKED(*(++uv));
-			glVertexPackedDL(NORMAL_PACK((tilesize+tilesize2*i)+x*bsizeR-x2,(-tilesize+tilesize2*j)+y*bsizeR-y2,(-tilesize+tilesize2*k)+z*bsizeR-z2));
-			break;
-	}
-}
-
-void captureQuadList(map_struct* m, quadList_struct* ql, u16 x, u16 y, u16 z)
-{
-	if(!ql->count)return;
-	quad_struct* q=ql->first;
-	int i=0;
-	glPushMatrix();
-	// glTranslatef32(x*bsize,y*bsize,z*bsize);
-	glBeginDL(GL_QUADS);
-		while(q)
-		{
-			i++;
-			captureQuadOpt(m, q, x, y, z);
-			q=q->next;
-		}
-	glPopMatrix(1);
-}
-
-void captureScene(map_struct* m, char* filename)
-{
-	int i;
-	u32* list=glBeginListDL();
-		listElement_struct* le=closedList.elements;
-		for(i=0;i<closedList.size;i++)
-		{
-			captureQuadList(m, &m->superCluster[le->i][le->j]->cluster[le->k].quadList, le->i, le->j, le->k);
-			le++;
-		}
-	glEndListDL();
-
-	// u32* sceneList=malloc(((*list)+1)*4);
-	// memcpy(sceneList, list, ((*list)+1)*4);
-	FILE* f=fopen(filename,"wb");
-	fwrite(list,4,((*list)+1),f);
-	fclose(f);
-}
 
 void drawTestCube(void)
 {
@@ -3138,7 +2863,7 @@ void drawTestCube(void)
 	glPopMatrix(1);
 }
 
-void drawTestMap(map_struct* m)
+void drawTestMapWithPlayer(map_struct* m, player_struct* player, void (*updatePlayerFn)(player_struct*), void (*playerCameraFn)(player_struct*, bool))
 {
 	int i, j, k, time;
 	
@@ -3174,22 +2899,22 @@ void drawTestMap(map_struct* m)
 			}*/
 		}else{
 		
-			if(Player.inWater==2)glPolyFmt(POLY_ALPHA(31) | POLY_CULL_BACK | POLY_FOG); //TEST TEST TEST
+			if(player->inWater==2)glPolyFmt(POLY_ALPHA(31) | POLY_CULL_BACK | POLY_FOG); //TEST TEST TEST
 			else glPolyFmt(POLY_ALPHA(31) | POLY_CULL_BACK);
 			// Game_ApplyMTL(NULL);
 			Game_FastBind(blockSuperTexture);
 			uvMapCur=uvMap;
 			listElement_struct* le=closedList.elements;
 			lightMapCur=lightMap;
-			// NOGBA("cave ? %d",Player.inCave);
-			// NOGBA("p : %d %d %d",Player.clusterCoord.x,Player.clusterCoord.y,Player.clusterCoord.z);
-			if(!Player.inCave && fogMode)
+			// NOGBA("cave ? %d",player->inCave);
+			// NOGBA("p : %d %d %d",player->clusterCoord.x,player->clusterCoord.y,player->clusterCoord.z);
+			if(!player->inCave && fogMode)
 			{
 				for(i=0;i<closedList.size;i++)
 				{
 					#ifdef FOGLIGHT
-						if(!Player.inCave && !m->superCluster[le->i][le->j]->cluster[le->k].lightList.count && le->i >= Player.clusterCoord.x-1 && le->j >= Player.clusterCoord.y-1 && le->k >= Player.clusterCoord.z-1
-						&& le->i <= Player.clusterCoord.x+1 && le->j <= Player.clusterCoord.y+1 && le->k <= Player.clusterCoord.z+1)
+						if(!player->inCave && !m->superCluster[le->i][le->j]->cluster[le->k].lightList.count && le->i >= player->clusterCoord.x-1 && le->j >= player->clusterCoord.y-1 && le->k >= player->clusterCoord.z-1
+						&& le->i <= player->clusterCoord.x+1 && le->j <= player->clusterCoord.y+1 && le->k <= player->clusterCoord.z+1)
 						{
 							glPolyFmt(POLY_ALPHA(31) | POLY_CULL_BACK | POLY_FOG);
 							lightMapCur=lightMap2;
@@ -3392,14 +3117,14 @@ void drawTestMap(map_struct* m)
 	glPopMatrix(1);
 		glPopMatrix(1);
 		glPushMatrix();
-		if(!testBuffer)updatePlayer(&Player);
-		i=(Player.position.x+(tilesize<<6)*SCALEFACTOR+(SUPERCLUSTERSIZE*(bsize*SCALEFACTOR))/2)/(bsize*SCALEFACTOR);
-		j=(Player.position.y+(tilesize<<6)*SCALEFACTOR+(SUPERCLUSTERSIZE*(bsize*SCALEFACTOR))/2)/(bsize*SCALEFACTOR);
-		k=(Player.position.z+(tilesize<<6)*SCALEFACTOR+(m->clusterSize.z*(bsize*SCALEFACTOR))/2)/(bsize*SCALEFACTOR);
+		if(!testBuffer && updatePlayerFn)updatePlayerFn(player);
+		i=(player->position.x+(tilesize<<6)*SCALEFACTOR+(SUPERCLUSTERSIZE*(bsize*SCALEFACTOR))/2)/(bsize*SCALEFACTOR);
+		j=(player->position.y+(tilesize<<6)*SCALEFACTOR+(SUPERCLUSTERSIZE*(bsize*SCALEFACTOR))/2)/(bsize*SCALEFACTOR);
+		k=(player->position.z+(tilesize<<6)*SCALEFACTOR+(m->clusterSize.z*(bsize*SCALEFACTOR))/2)/(bsize*SCALEFACTOR);
 		#ifdef DEBUGMODE
 		iprintf("\ncluster : %d, %d, %d", i+m->offset.x, j+m->offset.y, k);
 		#endif
-		playerCamera(&Player, true);
+		if(playerCameraFn)playerCameraFn(player, true);
 		glPushMatrix();
 		glScalef32(inttof32(SCALEFACTOR),inttof32(SCALEFACTOR),inttof32(SCALEFACTOR));
 		glTranslatef32(-(SUPERCLUSTERSIZE*CLUSTERSIZE*(tilesize2<<6))/2, -(SUPERCLUSTERSIZE*CLUSTERSIZE*(tilesize2<<6))/2,-(m->size.z*(tilesize2<<6))/2);

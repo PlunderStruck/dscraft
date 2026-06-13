@@ -63,8 +63,4 @@ static inline sec_t _FAT_fat_clusterToSector (PARTITION* partition, uint32_t clu
 		partition->rootDirStart;
 }
 
-static inline bool _FAT_fat_isValidCluster (PARTITION* partition, uint32_t cluster) {
-	return (cluster >= CLUSTER_FIRST) && (cluster <= partition->fat.lastCluster /* This will catch CLUSTER_ERROR */);
-}
-
 #endif // _FAT_H

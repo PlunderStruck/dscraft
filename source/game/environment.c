@@ -1,4 +1,10 @@
-#include "game/game_main.h"
+#include "common/general.h"
+#include "game/environment.h"
+#include "game/map.h"
+#include "game/player_types.h"
+#include "game/textures.h"
+#include "game/displaylistlib.h"
+#include "lodepng.h"
 
 // #define LOGOSIZE 128
 #define LOGOSIZE 96

@@ -1,11 +1,7 @@
 #ifndef CONTROLS_9
 #define CONTROLS_9
 
-touchPosition thisXY;
-touchPosition lastXY;
-
-u8 action;
-u8 tempCursor;
+#include "game/controls_state.h"
 
 void initControls(void);
 void updateControls(void);

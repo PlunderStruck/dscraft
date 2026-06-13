@@ -6,6 +6,8 @@
 // #define MAX_MALLOC 4096
 #define MAX_MALLOC 512
 
+#include "engine/state_types.h"
+
 typedef struct{
 	void* addr;
 	size_t size;
@@ -14,7 +16,7 @@ typedef struct{
 	bool used;
 }DS_malloc;
 
-void *DS_malloc_list[MAX_MALLOC];
+extern void *DS_malloc_list[MAX_MALLOC];
 void *GetStackPointer();
 
 void* DS_mAlloc(size_t size, DS_state* state);

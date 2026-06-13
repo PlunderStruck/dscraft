@@ -1,4 +1,6 @@
-#include "game/game_main.h"
+#include "common/general.h"
+#include "engine/files.h"
+#include "game/textures.h"
 #include "API/font.h"
 
 void setFont(font* f)

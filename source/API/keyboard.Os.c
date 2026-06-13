@@ -4,10 +4,24 @@
 #include "API/API.h"
 #include "API/keyboard.h"
 
+API_Entity* keyboardWindow;
+API_Entity* keyboardButton[KEYBOARDBUTTONS];
+char* keyboardString;
+int keyboardCursor, keyboardStrlen;
+API_drawfunction keyboardReturn;
+
+static const char keyboardButtons[] = { '1','2','3','4','5','6','7','8','9','0',
+										'q','w','e','r','t','y','u','i','o','p',
+										'a','s','d','f','g','h','j','k','l',
+										'z','x','c','v','b','n','m',' '};
+
+static const u8 keyboardRows[] = {10,10,9,7};
+
 void initKeyboard(u8 t)
 {
 	int i, j, k, h;
 	char string[2];
+	API_InputLockAllowedFunction=(API_function)&keyboardButtonPressed;
 	
 	if(t==0 || t>1){keyboardWindow=API_CreateWindow(150, 50, 170, 80, 31, RGB15(31,31,31), 1, RGB15(0,0,0), "");keyboardWindow->prio=800;}	
 	
@@ -33,7 +47,7 @@ void initKeyboard(u8 t)
 		API_ComputeDirections(&API_List, true);
 		API_SetAlphaSons(keyboardWindow,0);
 	}
-	keyboardLock=false;
+	API_InputLocked=false;
 }
 
 void keyboardButtonPressed(API_Entity *e)
@@ -82,7 +96,7 @@ void setupKeyboard(char* string, u8 stringlen, API_drawfunction r)
 
 void lockKeyboard()
 {
-	keyboardLock=true;
+	API_InputLocked=true;
 }
 
 void showKeyboard()
@@ -98,7 +112,7 @@ void hideKeyboard()
 	API_SetPosition(keyboardWindow,150,50);
 	API_SetAlpha(keyboardWindow,15);
 	API_SetAlphaSons(keyboardWindow,0);
-	keyboardLock=false;
+	API_InputLocked=false;
 	Cursor=NULL;
 }
 
@@ -115,6 +129,6 @@ void disappearKeyboard(u8 t)
 	API_MoveEntity(keyboardWindow,150,50,t);
 	API_FadeEntity(keyboardWindow,0,t);
 	API_FadeSons(keyboardWindow,0,t);
-	keyboardLock=false;
+	API_InputLocked=false;
 	Cursor=NULL;
 }

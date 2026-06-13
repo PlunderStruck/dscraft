@@ -1,4 +1,7 @@
-#include "game/game_main.h"
+#include "common/general.h"
+#include "fat/fatfile.h"
+
+#include <fcntl.h>
 
 struct _reent r;
 

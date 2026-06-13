@@ -37,7 +37,9 @@
 // Filesystem type
 typedef enum {FS_UNKNOWN, FS_FAT12, FS_FAT16, FS_FAT32} FS_TYPE;
 
-typedef struct {
+struct _FILE_STRUCT;
+
+typedef struct PARTITION {
 	sec_t    fatStart;
 	uint32_t sectorsPerFat;
 	uint32_t lastCluster;

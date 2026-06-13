@@ -7,7 +7,12 @@
  *
  */
 
-#include "common/general.h"
+#include <nds.h>
+#include <stddef.h>
+#include <malloc.h>
+#include <unistd.h>
+
+size_t latestUsed, latestFree;
 
 extern u8 __end__[];        // end of static code and data
 

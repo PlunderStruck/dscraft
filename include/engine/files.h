@@ -3,10 +3,10 @@
 
 #define ROOT "dscraft"
 
-bool saveAvailable;
-char* basePath;
-int lastSize;
-u8 fsMode;
+extern bool saveAvailable;
+extern char* basePath;
+extern int lastSize;
+extern u8 fsMode;
 
 int chdir (const char *path);
 bool DS_InitFS(int argc, char **argv);

@@ -1,5 +1,10 @@
 #include "common/general.h"
-#include "game/game_main.h"
+#include "engine/files.h"
+#include "engine/state.h"
+#include "game/ex_game.h"
+#include "menu/ex_menu.h"
+#include "game/map.h"
+#include "game/textures.h"
 
 #include <maxmod9.h>
 

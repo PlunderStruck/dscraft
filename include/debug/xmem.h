@@ -10,7 +10,10 @@
 #ifndef _XMEM_H
 #define _XMEM_H
 
-size_t latestUsed, latestFree;
+#include <nds.h>
+#include <stddef.h>
+
+extern size_t latestUsed, latestFree;
 
 u8 *getHeapStart();
 u8 *getHeapEnd();

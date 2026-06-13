@@ -1,18 +1,13 @@
 #ifndef _STATS_H
 #define _STATS_H
 
-typedef struct
-{
-	u32 total;
-	u32 max, min;
-	u32 count;
-}stats_struct;
+#include "debug/stats_types.h"
 
-stats_struct streamRead;
-stats_struct streamCalc;
-stats_struct columnWrite;
-stats_struct frameTime;
-stats_struct freeRam;
+extern stats_struct streamRead;
+extern stats_struct streamCalc;
+extern stats_struct columnWrite;
+extern stats_struct frameTime;
+extern stats_struct freeRam;
 
 void initStats(stats_struct* s);
 void addValue(stats_struct* s, u32 value);

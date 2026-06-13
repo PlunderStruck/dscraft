@@ -33,7 +33,10 @@
 #include <sys/stat.h>
 
 #include "common.h"
-#include "partition.h"
+
+#ifndef _PARTITION_H
+typedef struct PARTITION PARTITION;
+#endif
 
 #define DIR_ENTRY_DATA_SIZE 0x20
 #define MAX_LFN_LENGTH	256
@@ -88,22 +91,6 @@ enum DIR_ENTRY_offset {
 	DIR_ENTRY_cluster = 0x1A,
 	DIR_ENTRY_fileSize = 0x1C
 };
-
-/*
-Returns true if the file specified by entry is a directory
-*/
-static inline bool _FAT_directory_isDirectory (DIR_ENTRY* entry) {
-	return ((entry->entryData[DIR_ENTRY_attributes] & ATTRIB_DIR) != 0);
-}
-
-static inline bool _FAT_directory_isWritable (DIR_ENTRY* entry) {
-	return ((entry->entryData[DIR_ENTRY_attributes] & ATTRIB_RO) == 0);
-}
-
-static inline bool _FAT_directory_isDot (DIR_ENTRY* entry) {
-	return ((entry->filename[0] == '.') && ((entry->filename[1] == '\0') ||
-		((entry->filename[1] == '.') && entry->filename[2] == '\0')));
-}
 
 /*
 Reads the first directory entry from the directory starting at dirCluster

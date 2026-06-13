@@ -1,6 +1,7 @@
 #ifndef __D3D9__
 #define __D3D9__
 
+#include <nds.h>
 
 SpriteEntry D3D_sprites[128];
 

@@ -1,4 +1,10 @@
-#include "game/game_main.h"
+#include "common/general.h"
+#include "game/controls.h"
+#include "game/interface.h"
+#include "game/map.h"
+#include "game/player.h"
+#include "engine/debug.h"
+#include "engine/state.h"
 
 #include <maxmod9.h>
 

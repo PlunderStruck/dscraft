@@ -1,21 +1,13 @@
 #ifndef __STATE9__
 #define __STATE9__
 
-typedef void(*function)();
+#include "engine/state_types.h"
 
-typedef struct{
-	function Init,Frame,Kill,VBlank;
-	u16 mc_id;
-	u8 id;
-	bool used;
-	int notusedtest;
-}DS_state;
+extern u8 state_id;
 
-u8 state_id;
+extern DS_state *CurrentState, *NextState;
 
-DS_state *CurrentState, *NextState;
-
-DS_state Game_State, Bilan_State, Menu_State;
+extern DS_state Game_State, Menu_State;
 
 void glReInit(void);
 void DS_ApplyState(void);

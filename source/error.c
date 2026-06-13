@@ -1,15 +1,5 @@
 #include "common/general.h"
 
-char *errors[] =
-{
-	"Random error has occured. Please reboot.",
-	"Could not allocate memory.",
-	"Could not find free memory slot.",
-	"Could not free : pointer is NULL.",
-	"Could not free : memory slot not found.",
-	"Could not load file."
-};
-
 void DS_Error(u8 code)
 {
 	/*videoSetMode(0);

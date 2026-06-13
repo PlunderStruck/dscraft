@@ -1,4 +1,7 @@
-#include "common/general.h"
+#include "debug/xmem.h"
+
+#include <nds.h>
+#include <stddef.h>
 
 void DS_Debug(char* string, ...)
 {

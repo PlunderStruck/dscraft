@@ -2,6 +2,8 @@
 #ifndef MOBS_9
 #define MOBS_9
 
+#include "game/map.h"
+
 typedef struct
 {
 	vect3D colPosition, position, vector;

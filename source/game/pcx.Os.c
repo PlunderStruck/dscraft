@@ -27,97 +27,11 @@
  * gcc -Wall -ansi -lGL -lGLU -lglut pcx.c -o pcx
  */
 
-#include "game/game_main.h"
+#include "common/general.h"
+#include "engine/files.h"
+#include "game/pcx_types.h"
 
 int fileptr, filesize;
-
-// code from libnds
-int directLoadPCX(FILE* f, sImage* image) {
-	RGB_24* pal;
-	
-	PCXHeader hdr;
-	fread(&hdr,sizeof(PCXHeader),1,f);
-
-	// pcx += sizeof(PCXHeader);
-	
-	unsigned char c;
-	int size;
-	int count;
-	int run;
-	int i;
-	int iy;
-	int width, height;
-	int scansize = hdr.bytesPerLine;
-	unsigned char *scanline;
-
-
-	width = image->width  = hdr.xmax - hdr.xmin + 1 ;
-	height = image->height = hdr.ymax - hdr.ymin + 1;
-
-	size = image->width * image->height;
-
-	if(hdr.bitsPerPixel != 8)
-		return 0;
-	
-	scanline = image->image.data8 = (unsigned char*)malloc(size);
-	image->palette = (unsigned short*)malloc(256 * 2);
-
-	count = 0;
-
-	for(iy = 0; iy < height; iy++) {
-		count = 0;
-		while(count < scansize)
-		{
-			// c = *pcx++;
-			fread(&c,sizeof(u8),1,f);
-			
-			if(c < 192) {
-				scanline[count++] = c;
-			} else {
-				run = c - 192;
-			
-				// c = *pcx++;
-				fread(&c,sizeof(u8),1,f);
-				
-				for(i = 0; i < run && count < scansize; i++)
-					scanline[count++] = c;
-			}
-		}
-		scanline += width;
-	}
-
-	//check for the palette marker.
-	//I have seen PCX files without this, but the docs don't seem ambiguous--it must be here.
-	//Anyway, the support among other apps is poor, so we're going to reject it.
-	fread(&c,sizeof(u8),1,f);
-	// if(*pcx != 0x0C)
-	if(c != 0x0C)
-	{
-		free(image->image.data8);
-		image->image.data8 = 0;
-		free(image->palette);
-		image->palette = 0;
-		return 0;
-	}
-
-	// pcx++;
-
-	// pal = (RGB_24*)(pcx);
-	pal=malloc(256*sizeof(RGB_24));
-	fread(pal,sizeof(RGB_24),256,f);
-
-	image->bpp = 8;
-
-	for(i = 0; i < 256; i++)
-	{
-		u8 r = (pal[i].r + 4 > 255) ? 255 : (pal[i].r + 4);
-		u8 g = (pal[i].g + 4 > 255) ? 255 : (pal[i].g + 4);
-		u8 b = (pal[i].b + 4 > 255) ? 255 : (pal[i].b + 4);
-		image->palette[i] = RGB15(r >> 3 , g >> 3 , b >> 3) ;
-	}
-	free(pal);
-	return 1;
-}
 
 static void
 ReadPCX1bit (FILE *fp, const struct pcx_header_t *hdr,

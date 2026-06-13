@@ -1,6 +1,10 @@
 #include "menu/menu_main.h"
 #include <dirent.h>
 #include "API/API.h"
+#include "engine/error.h"
+#include "engine/files.h"
+#include "engine/state.h"
+#include "engine/memory.h"
 #include "game/map.h"
 #include "game/player.h"
 #include "game/environment.h"
@@ -32,9 +36,7 @@ u8 selectedScheme;
 MTL_img* logo;
 
 u32* sceneList1;
-u32* sceneList2;
 u32* subSceneList1;
-u32* subSceneList2;
 
 s16 testAngleZ;
 s16 testAngleX;
@@ -46,57 +48,6 @@ vect3D logoPos=(vect3D){0,0,0};
 void drawLogo(void);
 void setupButtons(filelist_struct* l, u16 index);
 void Menu_SelectScheme(API_Entity* e);
-
-void D3D2_glFrustumf32(int32 left, int32 right, int32 bottom, int32 top, int32 near, int32 far) {
-
-	MATRIX_MULT4x4 = divf32(2*near, right - left);
-	MATRIX_MULT4x4 = 0;
-	MATRIX_MULT4x4 = 0;
-	MATRIX_MULT4x4 = 0;
- 
-	MATRIX_MULT4x4 = 0;
-	MATRIX_MULT4x4 = divf32(2*near, top - bottom);
-	MATRIX_MULT4x4 = 0;
-	MATRIX_MULT4x4 = 0;
- 
-	MATRIX_MULT4x4 = divf32(right + left, right - left);
-	MATRIX_MULT4x4 = divf32(top + bottom, top - bottom);
-	MATRIX_MULT4x4 = -divf32(far + near, far - near);
-	MATRIX_MULT4x4 = floattof32(-1.0F);
- 
-	MATRIX_MULT4x4 = 0;
-	MATRIX_MULT4x4 = 0;
-	MATRIX_MULT4x4 = -divf32(2 * mulf32(far, near), far - near);
-	MATRIX_MULT4x4 = 0;
-}
-
-void D3D2_gluPerspectivef32(int fovy, int32 aspect, int32 zNear, int32 zFar) {
-	int32 xmin, xmax, ymin, ymax;
-	
-	ymax = mulf32(zNear, tanLerp(fovy>>1));
-	
-	ymin = -ymax;
-	xmin = mulf32(ymin, aspect);
-	xmax = mulf32(ymax, aspect);
-	
-	D3D2_glFrustumf32(xmin, xmax, ymin, ymax, zNear, zFar);
-}
-
-
-void D3D2_gluPerspectivef32_2(int fovy, int32 aspect, int32 zNear, int32 zFar) {
-	int32 xmin, xmax, ymin, ymax, ymax2;
-	
-	ymax = mulf32(zNear, tanLerp(fovy>>1));
-	
-	ymin = -ymax;
-
-	ymax2 = ymax+(ymax-ymin);
-
-	xmin = mulf32(ymin, aspect);
-	xmax = mulf32(ymax, aspect);
-	
-	D3D2_glFrustumf32(xmin, xmax, ymax, ymax2, zNear, zFar);
-}
 
 void RenderScene()
 {
@@ -621,8 +572,6 @@ void Menu_Init(void)
 	NOGBA("MEMORY : %dko used, %dko free    \n",DS_UsedMem()/1024,DS_FreeMem()/1024);
 	Game_GetVramStatus();
 }
-
-int button;
 
 //29;106 : 105;139
 void Menu_Frame(void)

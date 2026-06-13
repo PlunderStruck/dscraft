@@ -96,20 +96,6 @@ Read several sectors from the cache
 */
 bool _FAT_cache_readSectors (CACHE* cache, sec_t sector, sec_t numSectors, void* buffer);
 
-/*
-Read a full sector from the cache
-*/
-static inline bool _FAT_cache_readSector (CACHE* cache, void* buffer, sec_t sector) {
-	return _FAT_cache_readPartialSector (cache, buffer, sector, 0, BYTES_PER_READ);
-}
-
-/*
-Write a full sector to the cache
-*/
-static inline bool _FAT_cache_writeSector (CACHE* cache, const void* buffer, sec_t sector) {
-	return _FAT_cache_writePartialSector (cache, buffer, sector, 0, BYTES_PER_READ);
-}
-
 bool _FAT_cache_writeSectors (CACHE* cache, sec_t sector, sec_t numSectors, const void* buffer);
 
 /*
@@ -127,4 +113,3 @@ CACHE* _FAT_cache_constructor (unsigned int numberOfPages, unsigned int sectorsP
 void _FAT_cache_destructor (CACHE* cache);
 
 #endif // _CACHE_H
-

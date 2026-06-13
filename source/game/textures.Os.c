@@ -1,4 +1,8 @@
-#include "game/game_main.h"
+#include "common/general.h"
+#include "engine/files.h"
+#include "engine/state.h"
+#include "engine/memory.h"
+#include "game/textures.h"
 
 void Texture_GetGlWL(u16 width, u16 height, u8* w, u8* l)
 {

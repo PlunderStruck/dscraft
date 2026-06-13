@@ -1,4 +1,11 @@
 #include "common/general.h"
+#include "debug/stats_types.h"
+
+stats_struct streamRead;
+stats_struct streamCalc;
+stats_struct columnWrite;
+stats_struct frameTime;
+stats_struct freeRam;
 
 void initStats(stats_struct* s)
 {

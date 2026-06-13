@@ -29,20 +29,6 @@
 #include "creeper_bin.h"
 #endif
 
-#include "fat/fatfile.h"
-
-#include "common/math.h"
-
-#include "game/ex_game.h"
-#include "menu/ex_menu.h"
-
-#include "lodepng.h"
-#include "debug/xmem.h"
-#include "debug/stats.h"
-#include "engine/state.h"
 #include "engine/debug.h"
-#include "engine/error.h"
-#include "engine/files.h"
-#include "engine/memory.h"
 
 #endif

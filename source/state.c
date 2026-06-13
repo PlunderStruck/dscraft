@@ -1,4 +1,10 @@
 #include "common/general.h"
+#include "engine/state.h"
+#include "engine/memory.h"
+
+u8 state_id;
+DS_state *CurrentState, *NextState;
+DS_state Game_State, Menu_State;
 
 void DS_InitHardware(void)
 {

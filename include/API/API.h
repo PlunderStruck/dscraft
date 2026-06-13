@@ -1,24 +1,19 @@
 #ifndef __API9__
 #define __API9__
 
+#include <nds.h>
+
+#ifndef MTL_IMG_TYPEDEF
+#define MTL_IMG_TYPEDEF
+typedef struct MTL_img MTL_img;
+#endif
+
 typedef void(*API_drawfunction)(void* e);
 
 typedef struct
 {
 	s32 x, y;
 }coord2Ds;
-
-typedef struct
-{
-	u32 x, y;
-}coord2Du;
-
-typedef struct
-{
-	u8* data;
-	u8 charsizeX, charsizeY;
-	u8 difference;
-}API_Font;
 
 typedef struct API_Entity
 {
@@ -110,22 +105,19 @@ typedef struct
 	u16 count;
 }API_EntList;
 
-bool cull;
-bool API_DrawingOutline;
-API_Font API_font;
-API_EntList API_List;
-touchPosition API_Touch;
+extern bool cull;
+extern bool API_DrawingOutline;
+extern API_EntList API_List;
+extern touchPosition API_Touch;
 
-API_Entity* buttonBlock;
+extern API_Entity* buttonBlock;
 
-API_Entity *window1, *window2, *window3, *window4, *window5, *window6, *window7, *window8, *window9, *installWindow, *descriptionWindow, *replayWindow, *replayWindow2; //TEMP
-
-API_function API_ToCall;
-API_Entity* API_ToCallEntity;
-API_Entity* Cursor;
-API_Entity* DefaultCursor;
-
-API_Entity* TESTLABEL;
+extern API_function API_ToCall;
+extern API_Entity* API_ToCallEntity;
+extern API_Entity* Cursor;
+extern API_Entity* DefaultCursor;
+extern bool API_InputLocked;
+extern API_function API_InputLockAllowedFunction;
 
 void APIcall();
 void API_Init();

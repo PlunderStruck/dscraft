@@ -1,4 +1,13 @@
-#include "game/game_main.h"
+#include "common/general.h"
+#include "API/font.h"
+#include "engine/files.h"
+#include "game/controls_state.h"
+#include "game/environment.h"
+#include "game/interface.h"
+#include "game/interface_save.h"
+#include "game/map.h"
+#include "game/player.h"
+#include "game/textures.h"
 
 #define IBARY 170
 #define IBARD 20
@@ -49,36 +58,7 @@ u8 inventoryItem[]={14,15,16,17,18,19,20,21,22,
 					32,33,34,35,36,40,DOORTYPE,39,2};
 u8 inventoryItems=27;
 
-u8 cursorSprite, buttonSprite;
-
-//from libnds (heavily modified)
-void imageTileDataDest(sImage* img, u32* destination)
-{
-	int ix, iy, tx, ty;
-	int th, tw;
-	int i = 0;
-
-	th = img->height >> 3;
-	tw = img->width >> 3;
-
-	int x8, y8, x4, y4;	
-	for(x4=0;x4<4;x4++)
-	{
-		for(y4=0;y4<4;y4++)
-		{
-			for(x8=0;x8<8;x8++)
-			{
-				for(y8=0;y8<8;y8++)
-				{
-					ty=y8+8*y4;tx=x8+8*x4;i=0;
-						for(iy = 0; iy < 8; iy++)
-							for(ix = 0; ix < 2; ix++)
-								destination[(i++)+(x8+(y8+(x4+4*y4)*8)*8)*16] = img->image.data32[ix + tx * 2 + (iy + ty * 8) * tw * 2 ]; 
-				}
-			}
-		}
-	}
-}
+u8 cursorSprite;
 
 void loadImageDirect(char* filename)
 {
@@ -492,18 +472,4 @@ bool updateInterface(void)
 	}
 	// vramSetBankI(VRAM_I_SUB_SPRITE_EXT_PALETTE);
 	return !invOpen;
-}
-
-void startSave(void)
-{
-	oamSub.oamMemory[buttonSprite+2*3].attribute[0] = ATTR0_COLOR_256 | ATTR0_WIDE | (80);
-	oamSub.oamMemory[buttonSprite+2*3+1].attribute[0] = ATTR0_COLOR_256 | ATTR0_WIDE | (80);
-	oamUpdate(&oamSub);
-}
-
-void endSave(void)
-{
-	oamSub.oamMemory[buttonSprite+2*3].attribute[0] = ATTR0_DISABLED;
-	oamSub.oamMemory[buttonSprite+2*3+1].attribute[0] = ATTR0_DISABLED;
-	oamUpdate(&oamSub);
 }

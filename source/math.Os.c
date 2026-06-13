@@ -1,4 +1,4 @@
-#include "common/general.h"
+#include "common/math_lookup.h"
 
 #define MAX_ANGLE   512
 #define ABS(x)   ((x) < 0 ? -(x) : (x))

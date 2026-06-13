@@ -1,6 +1,8 @@
 #ifndef INTERFACE_9
 #define INTERFACE_9
 
+#include "game/map.h"
+
 #define MAXITEMS 64
 #define MAXSLOTS 64
 
@@ -31,7 +33,5 @@ void initItemBar(void);
 void initInterface(void);
 void loadInterface(char* filename, u8 prio);
 bool updateInterface(void);
-void startSave(void);
-void endSave(void);
 
 #endif
