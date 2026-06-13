@@ -43,6 +43,10 @@ s16 subtestAngleX;
 
 vect3D logoPos=(vect3D){0,0,0};
 
+void drawLogo(void);
+void setupButtons(filelist_struct* l, u16 index);
+void Menu_SelectScheme(API_Entity* e);
+
 void D3D2_glFrustumf32(int32 left, int32 right, int32 bottom, int32 top, int32 near, int32 far) {
 
 	MATRIX_MULT4x4 = divf32(2*near, right - left);
@@ -196,7 +200,8 @@ u8* loadFile(char* filename)
 	FILE* file;
 	
 	NOGBA("opening...");
-	file = fopen(filename, "rb+");
+	file = fopen(filename, "rb");
+	if(!file)DS_Error(5);
 	
 	u8* buffer;
 	long lsize;

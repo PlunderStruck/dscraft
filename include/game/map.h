@@ -261,12 +261,24 @@ int TESTVALUE3;
 bool readSectors(u32 sector, u32 number, u8* buffer);
 bool writeSectors(u32 sector, u32 number, u8* buffer);
 
+void initFilesystem(void);
+void freeQuadCache(void);
+void freeLightCache(void);
 void loadBlockTextures(bool spr, bool tex);
 void initSuperCluster(map_struct* m);
 void generateMapQuadList(map_struct* m);
 void initMap(map_struct* m, vect3D size);
 void addBlock(map_struct* m, int i, int j, int k);
+bool addWater(map_struct* m, u16 i, u16 j, u16 k, u8 t);
+void addQuad(quadList_struct* ql, map_struct* m, u8 direction, u8 light, u32 bid, u8* data, u16 i, u16 j, u16 k);
+void removeBlock(map_struct* m, int i, int j, int k, bool fix);
+void changeBlock(map_struct* m, int i, int j, int k, u8 type);
 void fixGap(map_struct* m, int i, int j, int k);
+void updateLightMap(void);
+void setFog(u8 mode);
+void freeMap(map_struct* m);
+void loadTestMap(map_struct* m);
+void drawTestCube(void);
 void renderClusterList(map_struct* m, int x, int y, int z);
 void drawTestCluster(cluster_struct* c, int i, int j, int k);
 

@@ -79,6 +79,7 @@ void Game_InitTextures()
 	for(i=0;i<MAX_TEX;i++)
 	{
 		Texture[i].used=false;
+		Texture[i].name=NULL;
 		Texture[i].ID=i;
 	}
 }
@@ -93,7 +94,7 @@ MTL_img* Game_CreateTexture(char* filename, char* directory)
 	{
 		if(!Texture[i].used)
 		{
-			for(j=0;j<MAX_TEX;j++){if(Texture[j].used){if(!strcmp(Texture[j].name,filename)){NOGBA("STOP !!!");return &Texture[j];}}}
+			for(j=0;j<MAX_TEX;j++){if(Texture[j].used && Texture[j].name){if(!strcmp(Texture[j].name,filename)){NOGBA("STOP !!!");return &Texture[j];}}}
 			Game_LoadTexturePCX(filename, directory, &Texture[i]);
 			return &Texture[i];
 		}
@@ -111,7 +112,7 @@ MTL_img* Game_CreateTextureAlpha(char* filename, char* directory, u8 alpha)
 	{
 		if(!Texture[i].used)
 		{
-			for(j=0;j<MAX_TEX;j++){if(Texture[j].used){if(!strcmp(Texture[j].name,filename)){NOGBA("STOP !!!");return &Texture[j];}}}
+			for(j=0;j<MAX_TEX;j++){if(Texture[j].used && Texture[j].name){if(!strcmp(Texture[j].name,filename)){NOGBA("STOP !!!");return &Texture[j];}}}
 			Game_LoadAlphaTexture(filename, directory, &Texture[i], alpha);
 			return &Texture[i];
 		}
@@ -129,7 +130,7 @@ MTL_img* Game_CreateAlphaMask(char* filename, char* directory)
 	{
 		if(!Texture[i].used)
 		{
-			for(j=0;j<MAX_TEX;j++){if(Texture[j].used){if(!strcmp(Texture[j].name,filename)){NOGBA("STOP !!!");return &Texture[j];}}}
+			for(j=0;j<MAX_TEX;j++){if(Texture[j].used && Texture[j].name){if(!strcmp(Texture[j].name,filename)){NOGBA("STOP !!!");return &Texture[j];}}}
 			Game_LoadAlphaMask(filename, directory, &Texture[i]);
 			return &Texture[i];
 		}
@@ -147,7 +148,7 @@ MTL_img* Game_CreateTextureAlphaMask(char* filename, char* directory, u8* alpha)
 	{
 		if(!Texture[i].used)
 		{
-			for(j=0;j<MAX_TEX;j++){if(Texture[j].used){if(!strcmp(Texture[j].name,filename)){NOGBA("STOP !!!");return &Texture[j];}}}
+			for(j=0;j<MAX_TEX;j++){if(Texture[j].used && Texture[j].name){if(!strcmp(Texture[j].name,filename)){NOGBA("STOP !!!");return &Texture[j];}}}
 			Game_LoadAlphaMaskTexture(filename, directory, &Texture[i], alpha);
 			return &Texture[i];
 		}
@@ -165,7 +166,7 @@ MTL_img* Game_CreateMaskedTexture(char* filename, char* directory)
 	{
 		if(!Texture[i].used)
 		{
-			for(j=0;j<MAX_TEX;j++){if(Texture[j].used){if(!strcmp(Texture[j].name,filename)){NOGBA("STOP !!!");return &Texture[j];}}}
+			for(j=0;j<MAX_TEX;j++){if(Texture[j].used && Texture[j].name){if(!strcmp(Texture[j].name,filename)){NOGBA("STOP !!!");return &Texture[j];}}}
 			Game_LoadMaskedTexture(filename, directory, &Texture[i]);
 			return &Texture[i];
 		}
@@ -273,12 +274,12 @@ void Palette_AddToBank(MTL_img *mtl, u16* data, size_t size)
 
 void Palette_Bind(MTL_img *mtl)
 {
-		GFX_PAL_FORMAT = ((uint32)mtl->pal)>>(4);
+		if(mtl && mtl->pal)GFX_PAL_FORMAT = ((uint32)mtl->pal)>>(4);
 }
 
 void Palette_Bind4(MTL_img *mtl)
 {
-		GFX_PAL_FORMAT = ((uint32)mtl->pal)>>(4-1);
+		if(mtl && mtl->pal)GFX_PAL_FORMAT = ((uint32)mtl->pal)>>(4-1);
 }
 
 void Texture_Bind(MTL_img *mtl)

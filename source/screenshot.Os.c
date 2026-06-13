@@ -4,6 +4,8 @@
 void wait();
 int scrnum;
 
+void D3D_SaveScreen(const char* filename, u16* buffer);
+
 
 void screenshot(u8* buffer) {
 

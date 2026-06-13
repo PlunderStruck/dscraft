@@ -20,10 +20,12 @@ typedef struct
 settings_struct gameSettings;
 
 void loadSettings(void);
+void saveSettings(void);
 void initPlayer(player_struct* p);
 void updatePlayer(player_struct* p);
 void playerCamera(player_struct* p, bool environment);
 vect3D getPointBlockPos(map_struct* m, int32 i, int32 j, int32 k);
+void testPlane(map_struct* m, vect3D point, vect3D* vector);
 
 player_struct Player;
 

@@ -17,21 +17,10 @@ u8 fsFormat;
 
 void initFilesystem(void)
 {
-	switch(fsMode)
-	{
-		case 1:
-			openMap=&openMapNOCASH;
-			readClusterColumn=&readClusterColumnNOCASH;
-			writeClusterColumn=&writeClusterColumnNOCASH;
-			fsFormat=0;
-			break;
-		default:
-			openMap=&openMap2048;
-			readClusterColumn=&readClusterColumn2048;
-			writeClusterColumn=&writeClusterColumn2048;
-			fsFormat=1;
-			break;
-	}
+	openMap=&openMapNOCASH;
+	readClusterColumn=&readClusterColumnNOCASH;
+	writeClusterColumn=&writeClusterColumnNOCASH;
+	fsFormat=0;
 }
 
 void initLightMap(void)
@@ -2897,19 +2886,6 @@ void writeMapHeader(map_struct* m)
 	NOGBA("player pos : %d %d",m->header->spawnX,m->header->spawnY);
 	switch(fsFormat)
 	{
-		case 1:
-			writeSectors(m->headerMap[0], 4, (u8*)m->header);
-			break;
-		case 2:
-			writeSectors(m->headerMap[0], 2, &(((u8*)m->header)[0]));
-			writeSectors(m->headerMap[1], 2, &(((u8*)m->header)[1024]));
-			break;
-		case 3:
-			writeSectors(m->headerMap[0], 1, &(((u8*)m->header)[0]));
-			writeSectors(m->headerMap[1], 1, &(((u8*)m->header)[512]));
-			writeSectors(m->headerMap[2], 1, &(((u8*)m->header)[1024]));
-			writeSectors(m->headerMap[3], 1, &(((u8*)m->header)[1024+512]));
-			break;
 		case 0:
 			NOGBA("writing header !");
 			break;

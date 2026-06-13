@@ -29,6 +29,9 @@ bool invOpen, overButtons;
 void initItems(void);
 void initItemBar(void);
 void initInterface(void);
+void loadInterface(char* filename, u8 prio);
 bool updateInterface(void);
+void startSave(void);
+void endSave(void);
 
 #endif

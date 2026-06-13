@@ -14,7 +14,7 @@ bool DS_InitFS(int argc, char **argv)
 			printf("init : done");
 			chdir("nitro:/");
 			chdir(ROOT);
-			if(!argv){saveAvailable=false;fsMode=1;} // no fat but nitro (gba slot)
+			if(!argv || !basePath){saveAvailable=false;fsMode=1;} // no fat but nitro (gba slot)
 			else{
 				fsMode=2; // nitro and fat
 				saveAvailable=true;
@@ -68,8 +68,8 @@ void* DS_OpenFile (char* filename, char* dir, bool bufferize, bool binary)
 	FILE* file;
 	NOGBA("opening %s...",filename);
 	
-	if(binary==false)file = fopen(filename, "r+");
-	else file = fopen(filename, "rb+");
+	if(binary==false)file = fopen(filename, "r");
+	else file = fopen(filename, "rb");
 	//DS_Debug("done.");
 	
 		if(file == NULL){NOGBA("error: couldn't locate \"%s\" in %s ! (%s)\n", filename, dir, path);}
@@ -104,8 +104,8 @@ void* DS_OpenFile2 (char* filename, char* dir, bool binary)
 	FILE* file;
 	DS_Debug("opening %s...",filename);
 	
-		if(binary==false)file = fopen(filename, "r+");
-		else file = fopen(filename, "rb+");
+		if(binary==false)file = fopen(filename, "r");
+		else file = fopen(filename, "rb");
 	
 	DS_Debug("done.");
 	

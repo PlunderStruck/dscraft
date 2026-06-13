@@ -21,7 +21,7 @@ SOURCES		:=	source source/game source/debug source/engine source/common source/A
 DATA		:=  data
 INCLUDES	:=	include
 NITRODATA	:=	nitrofiles
-GAME_ICON   := $(CURDIR)/../icon.bmp
+GAME_ICON   := $(abspath $(CURDIR)/$(if $(filter $(BUILD),$(notdir $(CURDIR))),..,.)/icon.bmp)
 GAME_TITLE   := DScraft v310811
 GAME_SUBTITLE1   := made by smealum
 GAME_SUBTITLE2   := www.smealum.net/dscraft
@@ -35,6 +35,9 @@ ARCH	:=
 
 CFLAGS	:=	-g -Wall -O3\
  		-fomit-frame-pointer\
+		-fcommon \
+		-ffunction-sections \
+		-fdata-sections \
 		-ffast-math \
 		$(ARCH)
 
@@ -42,7 +45,7 @@ CFLAGS	+=	$(INCLUDE) -DARM9
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions
 
 ASFLAGS	:=	-g $(ARCH)
-LDFLAGS	=	-specs=ds_arm9.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
+LDFLAGS	=	-specs=ds_arm9.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map),--gc-sections
 
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project (order is important)

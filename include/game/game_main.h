@@ -29,6 +29,8 @@ int Game_FPS, Game_FrameCount, Game_VBLcount;
 #include "game/environment.h"
 #include "game/displaylistlib.h"
 
+#include "engine/screenshot.h"
+
 #include "API/font.h"
 
 #endif

@@ -33,6 +33,12 @@ void loadSettings(void)
 	#ifdef FATONLY
 		dictionary* setdic=iniparser_load("settings.ini");//ROOT ?
 	#else
+		if(!saveAvailable || !basePath)
+		{
+			gameSettings.controls=0;
+			sprintf(gameSettings.texturePack,"nitro:/dscraft/packs/eldpack");
+			return;
+		}
 		char path[255];sprintf(path,"%s/%s/settings.ini",basePath,ROOT);
 		dictionary* setdic=iniparser_load(path);//ROOT ?
 	#endif

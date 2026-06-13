@@ -24,7 +24,7 @@ void DS_SetState(DS_state* state);
 
 static inline void DS_ChangeState(DS_state* state)
 {
-	CurrentState->used=0;
+	if(CurrentState)CurrentState->used=0;
 	NextState=state;
 }
 
