@@ -68,7 +68,7 @@ typedef struct
 static u8 usedSprites;
 static item_struct items[MAXITEMS];
 static slot_struct slots[MAXSLOTS];
-static bool invOpen, overButtons;
+static bool invOpen, overButtons, topButtonActionConsumed;
 
 bool Interface_IsInventoryOpen(void)
 {
@@ -78,6 +78,33 @@ bool Interface_IsInventoryOpen(void)
 bool Interface_IsOverButtons(void)
 {
 	return overButtons;
+}
+
+bool Interface_AllowsLookTouch(void)
+{
+	return !invOpen && thisXY.py>=TOGGLEY+TOGGLESY;
+}
+
+static bool Interface_TouchInRect(touchPosition touch, int x, int y, int width, int height)
+{
+	return touch.px>=x && touch.py>=y && touch.px<x+width && touch.py<y+height;
+}
+
+static bool Interface_ActivateTopButton(int x, int y, int width, int height)
+{
+	if(topButtonActionConsumed)return false;
+	if((keysHeld() & KEY_TOUCH) && Interface_TouchInRect(thisXY, x, y, width, height))
+	{
+		topButtonActionConsumed=true;
+		return true;
+	}
+	if((keysUp() & KEY_TOUCH)
+	&& (Interface_TouchInRect(lastXY, x, y, width, height) || Interface_TouchInRect(thisXY, x, y, width, height)))
+	{
+		topButtonActionConsumed=true;
+		return true;
+	}
+	return false;
 }
 
 u8 itemBar[]={1,3,4,13,6,7,8,11,12}; //water test
@@ -370,6 +397,8 @@ void initInterface(void)
 	oamUpdate(&oamSub);
 
 	invOpen=false;
+	overButtons=false;
+	topButtonActionConsumed=false;
 }
 
 s8 selectedItem=-1;
@@ -450,32 +479,31 @@ bool updateInterface(void)
 			}
 		}
 	}
-	if(!invOpen && (keysDown() & KEY_TOUCH))overButtons=thisXY.py<TOGGLEY+TOGGLESY;
-	else if(invOpen)overButtons=true;
+	if(!(keysHeld() & KEY_TOUCH) && !(keysUp() & KEY_TOUCH))topButtonActionConsumed=false;
+	if(invOpen)overButtons=true;
+	else if((keysHeld() & KEY_TOUCH) && Interface_TouchInRect(thisXY, TOGGLEX, TOGGLEY, 256, TOGGLESY))overButtons=true;
+	else if((keysUp() & KEY_TOUCH)
+		&& (Interface_TouchInRect(lastXY, TOGGLEX, TOGGLEY, 256, TOGGLESY) || Interface_TouchInRect(thisXY, TOGGLEX, TOGGLEY, 256, TOGGLESY)))overButtons=true;
+	else if(keysDown() & KEY_TOUCH)overButtons=thisXY.py<TOGGLEY+TOGGLESY;
+	else if(!(keysHeld() & KEY_TOUCH) && !(keysUp() & KEY_TOUCH))overButtons=false;
 	if(!(keysHeld() & KEY_TOUCH))selectedItem=-1;
 	if((keysHeld() & KEY_TOUCH) && thisXY.px>=CLOCKX && thisXY.py>=CLOCKY && thisXY.px<CLOCKX+32 && thisXY.py<CLOCKY+16)
 	{
 		Environment_AdvanceClock(600, 200);
 	}
-	if(overButtons)
 	{
-		if((keysUp() & KEY_TOUCH) && lastXY.px>=TOGGLEX && lastXY.py>=TOGGLEY && lastXY.px<TOGGLEX+TOGGLESX && lastXY.py<TOGGLEY+TOGGLESY)
+		if(Interface_ActivateTopButton(TOGGLEX, TOGGLEY, TOGGLESX, TOGGLESY))
 		{
 			action^=1;
 		}else if(!action){oamSub.oamMemory[buttonSprite+2*0].attribute[0] = ATTR0_DISABLED;oamSub.oamMemory[buttonSprite+2*0+1].attribute[0] = ATTR0_DISABLED;}//else VRAM_I_EXT_SPR_PALETTE[0][TOGGLECOL]=RGB15(31,31,31);
-		if(action || ((keysHeld() & KEY_TOUCH) && thisXY.px>=TOGGLEX && thisXY.py>=TOGGLEY && thisXY.px<TOGGLEX+TOGGLESX && thisXY.py<TOGGLEY+TOGGLESY))
+		if(action || ((keysHeld() & KEY_TOUCH) && Interface_TouchInRect(thisXY, TOGGLEX, TOGGLEY, TOGGLESX, TOGGLESY)))
 		{
 			// VRAM_I_EXT_SPR_PALETTE[0][TOGGLECOL]=RGB15(15,15,15);
 			oamSub.oamMemory[buttonSprite+2*0].attribute[0] = ATTR0_COLOR_256 | ATTR0_WIDE | (0);
 			oamSub.oamMemory[buttonSprite+2*0+1].attribute[0] = ATTR0_COLOR_256 | ATTR0_WIDE | (0);
 		}
 		
-		if((keysHeld() & KEY_TOUCH) && thisXY.px>=INVX && thisXY.py>=INVY && thisXY.px<INVX+INVSX && thisXY.py<INVY+INVSY)
-		{
-			// VRAM_I_EXT_SPR_PALETTE[0][INVCOL]=RGB15(15,15,15);
-			oamSub.oamMemory[buttonSprite+2*1].attribute[0] = ATTR0_COLOR_256 | ATTR0_WIDE | (0);
-			oamSub.oamMemory[buttonSprite+2*1+1].attribute[0] = ATTR0_COLOR_256 | ATTR0_WIDE | (0);
-		}else if((keysUp() & KEY_TOUCH) && lastXY.px>=INVX && lastXY.py>=INVY && lastXY.px<INVX+INVSX && lastXY.py<INVY+INVSY)
+		if(Interface_ActivateTopButton(INVX, INVY, INVSX, INVSY))
 		{
 			if(invOpen)
 			{
@@ -504,18 +532,24 @@ bool updateInterface(void)
 				}
 			}
 			invOpen^=1;
+		}else if((keysHeld() & KEY_TOUCH) && Interface_TouchInRect(thisXY, INVX, INVY, INVSX, INVSY))
+		{
+			// VRAM_I_EXT_SPR_PALETTE[0][INVCOL]=RGB15(15,15,15);
+			oamSub.oamMemory[buttonSprite+2*1].attribute[0] = ATTR0_COLOR_256 | ATTR0_WIDE | (0);
+			oamSub.oamMemory[buttonSprite+2*1+1].attribute[0] = ATTR0_COLOR_256 | ATTR0_WIDE | (0);
 		}else{oamSub.oamMemory[buttonSprite+2*1].attribute[0] = ATTR0_DISABLED;oamSub.oamMemory[buttonSprite+2*1+1].attribute[0] = ATTR0_DISABLED;}//else VRAM_I_EXT_SPR_PALETTE[0][INVCOL]=RGB15(31,31,31);
 		
-		if((keysHeld() & KEY_TOUCH) && thisXY.px>=SAVEX && thisXY.py>=SAVEY && thisXY.px<SAVEX+SAVESX && thisXY.py<SAVEY+SAVESY)
+		if(Interface_ActivateTopButton(SAVEX, SAVEY, SAVESX, SAVESY))
+		{
+			globalSaveMap(&map);
+		}else if((keysHeld() & KEY_TOUCH) && Interface_TouchInRect(thisXY, SAVEX, SAVEY, SAVESX, SAVESY))
 		{
 			// VRAM_I_EXT_SPR_PALETTE[0][SAVECOL]=RGB15(15,15,15);
 			oamSub.oamMemory[buttonSprite+2*2].attribute[0] = ATTR0_COLOR_256 | ATTR0_WIDE | (0);
 			oamSub.oamMemory[buttonSprite+2*2+1].attribute[0] = ATTR0_COLOR_256 | ATTR0_WIDE | (0);
-		}else if((keysUp() & KEY_TOUCH) && lastXY.px>=SAVEX && lastXY.py>=SAVEY && lastXY.px<SAVEX+SAVESX && lastXY.py<SAVEY+SAVESY)
-		{
-			globalSaveMap(&map);
 		}else{oamSub.oamMemory[buttonSprite+2*2].attribute[0] = ATTR0_DISABLED;oamSub.oamMemory[buttonSprite+2*2+1].attribute[0] = ATTR0_DISABLED;}
 	}
+	if(!invOpen && (keysUp() & KEY_TOUCH))overButtons=false;
 	// vramSetBankI(VRAM_I_SUB_SPRITE_EXT_PALETTE);
 	return !invOpen;
 }

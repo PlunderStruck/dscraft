@@ -11,5 +11,6 @@ bool updateInterface(void);
 bool getItemBlockForSlot(u8 slot, u8* block);
 bool Interface_IsInventoryOpen(void);
 bool Interface_IsOverButtons(void);
+bool Interface_AllowsLookTouch(void);
 
 #endif

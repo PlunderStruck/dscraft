@@ -277,7 +277,7 @@ void controlScheme1(void)
 	if((keysDown() & KEY_TOUCH) && !doubletap)doubletap=1;
 	else if((keysDown() & KEY_TOUCH) && doubletap && !noclip && (Player.inWater || !Player.vector.z) && !Interface_IsInventoryOpen() && !Interface_IsOverButtons()){Player.vector.z += 850;doubletap=0;}
 	
-	if(updateInterface() && !Interface_IsOverButtons() && (keysHeld() & KEY_TOUCH))
+	if(updateInterface() && Interface_AllowsLookTouch() && (keysHeld() & KEY_TOUCH))
 	{
 		if(!(keysDown() & KEY_TOUCH))
 		{
@@ -387,6 +387,14 @@ void controlScheme3(void)
 
 void updateControls(void)
 {
+	if(!testBuffer)
+	{
+		scanKeys();
+		touchRead(&thisXY);
+		updateInterface();
+		if(keysHeld() & KEY_TOUCH)lastXY = thisXY;
+	}
+
 	if(testBuffer)
 	{
 		scanKeys();

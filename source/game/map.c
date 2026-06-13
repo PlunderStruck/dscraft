@@ -1065,11 +1065,11 @@ static void addVisibleClusterFallback(list_struct* l, map_struct* m, int i, int 
 static void seedVisibleClusterFallback(map_struct* m, list_struct* l, int sI, int sJ, int sK)
 {
 	int i, j, k;
-	for(k=sK-4;k<=sK+2;k++)
+	for(k=sK-3;k<=sK+1;k++)
 	{
-		for(j=sJ-8;j<=sJ+8;j++)
+		for(j=sJ-5;j<=sJ+5;j++)
 		{
-			for(i=sI-8;i<=sI+8;i++)
+			for(i=sI-5;i<=sI+5;i++)
 			{
 				addVisibleClusterFallback(l, m, i, j, k);
 			}
