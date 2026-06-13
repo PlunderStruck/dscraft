@@ -1,7 +1,7 @@
 #ifndef PLAYER_9
 #define PLAYER_9
 
-#include "game/map.h"
+#include "game/map_types.h"
 #include "game/player_types.h"
 
 void loadSettings(void);

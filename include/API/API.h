@@ -2,6 +2,7 @@
 #define __API9__
 
 #include <nds.h>
+#include "game/map_types.h"
 
 #ifndef MTL_IMG_TYPEDEF
 #define MTL_IMG_TYPEDEF

@@ -1,6 +1,6 @@
 # Runtime Entrypoints And Preservation Notes
 
-This project is an old Nintendo DS homebrew game. A runtime entry point is code that the platform or toolchain calls directly instead of through an ordinary C reference from another source file. In this repository, `source/template.c:main` is the ARM9 program entry point for the ROM, so graph tools can report it as dead even though deleting it would remove the game.
+This project is an old Nintendo DS homebrew game. A runtime entry point is code that the platform or toolchain calls directly instead of through an ordinary C reference from another source file. In this repository, `source/template.c:main` is the ARM9 program entry point for the ROM, so graph tools can report it as dead even though deleting it would remove the game. `source/template.c` includes `include/game/map_types.h` for shared startup state such as `packPath`; it should not include the aggregate `include/game/map.h` unless startup needs the full map API again.
 
 The FAT headers under `include/fat/` describe on-disk filesystem data. An on-disk layout is a C representation of bytes stored by a filesystem or file format, where field order and size matter because external data is read into that shape. Fields in `DIR_ENTRY` and filesystem-type constants can appear unused to source-indexing tools, but they preserve compatibility with FAT directory records and partition metadata.
 

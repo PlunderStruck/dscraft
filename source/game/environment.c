@@ -1,5 +1,6 @@
 #include "common/general.h"
-#include "game/map.h"
+#include "game/map_render.h"
+#include "game/map_types.h"
 #include "game/player_types.h"
 #include "game/textures.h"
 #include "game/displaylistlib.h"

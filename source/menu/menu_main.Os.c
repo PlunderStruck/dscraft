@@ -5,7 +5,10 @@
 #include "engine/files.h"
 #include "engine/state.h"
 #include "engine/memory.h"
-#include "game/map.h"
+#include "game/map_api.h"
+#include "game/map_io.h"
+#include "game/map_render.h"
+#include "game/map_types.h"
 #include "game/player.h"
 #include "game/environment.h"
 

@@ -1,5 +1,5 @@
 #include "common/general.h"
-#include "game/map.h"
+#include "game/map_types.h"
 
 char packPath[255];
 char mapPath[255];

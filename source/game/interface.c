@@ -4,7 +4,8 @@
 #include "game/controls_state.h"
 #include "game/environment.h"
 #include "game/interface_save.h"
-#include "game/map.h"
+#include "game/map_io.h"
+#include "game/map_types.h"
 #include "game/player.h"
 #include "game/textures.h"
 

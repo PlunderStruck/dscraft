@@ -1,5 +1,5 @@
 #include "common/general.h"
-#include "game/map.h"
+#include "game/map_types.h"
 #include "game/mobs.h"
 #include "game/textures.h"
 #ifdef SURVIVAL

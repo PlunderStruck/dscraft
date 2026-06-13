@@ -3,7 +3,7 @@
 #include "engine/state.h"
 #include "game/ex_game.h"
 #include "menu/ex_menu.h"
-#include "game/map.h"
+#include "game/map_types.h"
 #include "game/textures.h"
 
 #include <maxmod9.h>
