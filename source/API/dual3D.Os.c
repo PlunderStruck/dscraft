@@ -74,12 +74,14 @@ void Game_UpdateD3D()
 	if (D3D_Screen) {
 		vramSetBankC(VRAM_C_SUB_BG);
 		vramSetBankD(VRAM_D_LCD);
+		videoSetModeSub(MODE_5_2D | DISPLAY_BG2_ACTIVE);
 		// D3D_SetRegCapture(true, 0, 15, 3, 0, 3, 0, 0);
 		D3D_SetRegCapture(true, 0, 16, 3, 0, 3, 0, 0);
 		D3D_Screen=false;
 	}else{
 		vramSetBankC(VRAM_C_LCD);
 		vramSetBankD(VRAM_D_SUB_SPRITE);
+		videoSetModeSub(MODE_5_2D | DISPLAY_SPR_ACTIVE | DISPLAY_SPR_2D_BMP_256);
 		// D3D_SetRegCapture(true, 0, 15, 2, 0, 3, 0, 0);
 		D3D_SetRegCapture(true, 0, 16, 2, 0, 3, 0, 0);
 		D3D_Screen=true;
