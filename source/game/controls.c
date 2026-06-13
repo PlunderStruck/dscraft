@@ -392,7 +392,6 @@ void updateControls(void)
 		scanKeys();
 		touchRead(&thisXY);
 		updateInterface();
-		if(keysHeld() & KEY_TOUCH)lastXY = thisXY;
 	}
 
 	if(testBuffer)
