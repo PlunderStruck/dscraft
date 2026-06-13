@@ -1035,6 +1035,48 @@ static inline void addListElement(list_struct* l, u16 i, u16 j, u16 k, u8 direct
 	l->size++;
 }
 
+static bool clusterHasDrawableGeometry(map_struct* m, int i, int j, int k)
+{
+	cluster_struct* cluster=&m->superCluster[i][j]->cluster[k];
+	return cluster->quadList.count || cluster->specialList.count;
+}
+
+static bool listContainsCluster(list_struct* l, int i, int j, int k)
+{
+	int n;
+	for(n=0;n<l->size;n++)
+	{
+		listElement_struct* element=&l->elements[n];
+		if(element->i==i && element->j==j && element->k==k)return true;
+	}
+	return false;
+}
+
+static void addVisibleClusterFallback(list_struct* l, map_struct* m, int i, int j, int k)
+{
+	if(l->size>=LISTSIZE)return;
+	if(i<0 || j<0 || k<0)return;
+	if(i>=SUPERCLUSTERSIZE || j>=SUPERCLUSTERSIZE || k>=m->clusterSize.z)return;
+	if(!clusterHasDrawableGeometry(m, i, j, k))return;
+	if(listContainsCluster(l, i, j, k))return;
+	addListElement(l, i, j, k, 0);
+}
+
+static void seedVisibleClusterFallback(map_struct* m, list_struct* l, int sI, int sJ, int sK)
+{
+	int i, j, k;
+	for(k=sK-4;k<=sK+2;k++)
+	{
+		for(j=sJ-8;j<=sJ+8;j++)
+		{
+			for(i=sI-8;i<=sI+8;i++)
+			{
+				addVisibleClusterFallback(l, m, i, j, k);
+			}
+		}
+	}
+}
+
 int olcursor;
 
 void cullClusters(map_struct* m, list_struct* ol, list_struct* cl, int sI, int sJ, int sK)
@@ -2929,6 +2971,13 @@ void drawTestMapWithPlayer(map_struct* m, player_struct* player, void (*updatePl
 	glTranslatef32(-(SUPERCLUSTERSIZE*CLUSTERSIZE*(tilesize2<<6))/2, -(SUPERCLUSTERSIZE*CLUSTERSIZE*(tilesize2<<6))/2,-(m->size.z*(tilesize2<<6))/2);
 	{
 		testquads=0;
+		if(closedList.size<8)
+		{
+			int cI=(player->position.x+(tilesize<<6)*SCALEFACTOR+(SUPERCLUSTERSIZE*(bsize*SCALEFACTOR))/2)/(bsize*SCALEFACTOR);
+			int cJ=(player->position.y+(tilesize<<6)*SCALEFACTOR+(SUPERCLUSTERSIZE*(bsize*SCALEFACTOR))/2)/(bsize*SCALEFACTOR);
+			int cK=(player->position.z+(tilesize<<6)*SCALEFACTOR+(m->clusterSize.z*(bsize*SCALEFACTOR))/2)/(bsize*SCALEFACTOR);
+			seedVisibleClusterFallback(m, &closedList, cI, cJ, cK);
+		}
 		PROF_START();
 		glPolyFmt(POLY_ALPHA(31) /*| POLY_FORMAT_LIGHT0 | POLY_FORMAT_LIGHT1*/ | POLY_CULL_BACK);
 		// if(keysHeld() & KEY_SELECT)

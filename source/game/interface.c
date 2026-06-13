@@ -190,7 +190,7 @@ void initInventory(void)
 		items[9+i].slot=9+i;
 		items[9+i].used=true;
 		
-		setItemPosition(i, slots[items[i].slot].position.x, slots[items[i].slot].position.y);
+		setItemPosition(9+i, 255, 192);
 	}
 }
 
