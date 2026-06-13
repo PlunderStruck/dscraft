@@ -167,6 +167,8 @@ void Game_Init(void)
 	for(i=0;i<256*192;i++){VRAM_B[i]=0;VRAM_C[i]=0;}
 	loadInterface("interface.bin", 1);
 	initPlayer(&Player);
+	// Old bundled maps have no stored yaw; face the fallback spawn toward open ground.
+	Player.angleZ=16384;
 	#ifdef SURVIVAL
 		initMobs();
 		addMob(&map, Player.position, 0);

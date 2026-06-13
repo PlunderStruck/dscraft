@@ -2660,6 +2660,7 @@ void updateLightMap(void)
 		u8 l=min(LIGHTAMBIENT2+(lightSun[d]+(i&127)),31);
 		*lm=RGB15(l,l,l);
 		lm++;
+		i++;
 		if(l==31)break;
 	}while(i);
 	for(i=i;i;i++)*(lm++)=RGB15(31,31,31);
@@ -3250,14 +3251,17 @@ void drawTestMapWithPlayer(map_struct* m, player_struct* player, void (*updatePl
 			toProcess_struct* q=lightProcess.first;
 			// toProcess_struct** pq=&lightProcess.first;
 			void** pq=&lightProcess.first;
-			while(q)
+			u16 remaining=lightProcess.count;
+			while(q && remaining)
 			{
+				remaining--;
 				if(q->i-m->offset.x*CLUSTERSIZE>CLUSTERSIZE && q->i-m->offset.x*CLUSTERSIZE<(SUPERCLUSTERSIZE-2)*CLUSTERSIZE
 				&& q->j-m->offset.y*CLUSTERSIZE>CLUSTERSIZE && q->j-m->offset.y*CLUSTERSIZE<(SUPERCLUSTERSIZE-2)*CLUSTERSIZE)
 				{
 					vect3D clusterCoord=getCluster(m,q->i,q->j,q->k);
 					processLight(m,q->i,q->j,q->k,clusterCoord);
 					*pq=q->next;
+					if(lightProcess.count)lightProcess.count--;
 					free(q);
 					break;
 				}
