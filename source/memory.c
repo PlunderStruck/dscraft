@@ -2,7 +2,7 @@
 #include "engine/memory.h"
 #include <errno.h>
 
-void *DS_malloc_list[MAX_MALLOC];
+static void *DS_malloc_list[MAX_MALLOC];
 
 void DS_InitMalloc()
 {

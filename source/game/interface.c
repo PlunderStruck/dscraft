@@ -3,7 +3,6 @@
 #include "engine/files.h"
 #include "game/controls_state.h"
 #include "game/environment.h"
-#include "game/interface.h"
 #include "game/interface_save.h"
 #include "game/map.h"
 #include "game/player.h"
@@ -68,7 +67,17 @@ typedef struct
 static u8 usedSprites;
 static item_struct items[MAXITEMS];
 static slot_struct slots[MAXSLOTS];
-bool invOpen, overButtons;
+static bool invOpen, overButtons;
+
+bool Interface_IsInventoryOpen(void)
+{
+	return invOpen;
+}
+
+bool Interface_IsOverButtons(void)
+{
+	return overButtons;
+}
 
 u8 itemBar[]={1,3,4,13,6,7,8,11,12}; //water test
 // u8 itemBar[]={1,3,4,13,6,7,40,11,12}; //ladder test
@@ -370,7 +379,7 @@ bool updateInterface(void)
 	int i, j;
 
 	oamRotateScale(&oamSub, 0, -Player.angleZ, intToFixed(1, 8), intToFixed(1, 8));
-	oamRotateScale(&oamSub, 1, sunX+8192, intToFixed(1, 8), intToFixed(1, 8));
+	oamRotateScale(&oamSub, 1, Environment_GetSunSpriteAngle(), intToFixed(1, 8), intToFixed(1, 8));
 	oamUpdate(&oamSub);
 
 	// vramSetBankI(VRAM_I_LCD);
@@ -445,8 +454,7 @@ bool updateInterface(void)
 	if(!(keysHeld() & KEY_TOUCH))selectedItem=-1;
 	if((keysHeld() & KEY_TOUCH) && thisXY.px>=CLOCKX && thisXY.py>=CLOCKY && thisXY.px<CLOCKX+32 && thisXY.py<CLOCKY+16)
 	{
-		sunX+=600;
-		cloudcnt+=200;
+		Environment_AdvanceClock(600, 200);
 	}
 	if(overButtons)
 	{

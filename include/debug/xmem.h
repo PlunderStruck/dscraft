@@ -13,8 +13,6 @@
 #include <nds.h>
 #include <stddef.h>
 
-extern size_t latestUsed, latestFree;
-
 u8 *getHeapStart();
 u8 *getHeapEnd();
 u8 *getHeapLimit();

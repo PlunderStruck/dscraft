@@ -15,10 +15,6 @@ list_struct openList, closedList;
 
 toProcessList_struct lightProcess;
 
-MTL_img* cursorTexture;
-MTL_img* waterTexture;
-MTL_img* blockSuperTexture;
-MTL_img *crossHair;
 u8 degradTable[8*8*5];
 u8 lightTable[16*16*16*14];
 u8 lightComputeTable[256*32];

@@ -11,6 +11,7 @@
 #include "game/interface.h"
 #include "game/jump.h"
 #include "game/map.h"
+#include "game/map_player.h"
 #include "game/mobs.h"
 #include "game/player.h"
 #include "game/textures.h"
@@ -272,7 +273,7 @@ void Game_Frame(void)
 		glTranslatef32(0, inttof32(-800), 0);
 		glPolyFmt(POLY_ALPHA(31) | POLY_CULL_NONE);
 		glColor(RGB15(31,31,31));
-		Game_ApplyMTL(crossHair);
+		Map_ApplyCrossHair();
 		glBegin(GL_QUADS);
 		GFX_TEX_COORD = TEXTURE_PACK(16*(0), 16*(16));
 		GFX_VERTEX10 = NORMAL_PACK((255),(0),(-256));
@@ -303,10 +304,10 @@ void Game_Frame(void)
 	// if(testBuffer)iprintf("\x1b[0;0HMCDS_test \n\nframe :  %d   ",time);
 	// else iprintf("\nframe :  %d   ",time);
 	#ifdef DEBUGMODE
-	if(testBuffer)iprintf("\x1b[0;0HMCDS_test %d fps   \n\n%dK;%dK %d, %d, %d, %d ",Game_FPS,latestFree/1024,latestUsed/1024,TESTVALUE, cacheNumber, cacheCursor, lightProcess.count);
+	if(testBuffer)iprintf("\x1b[0;0HMCDS_test %d fps   \n\n%dK;%dK %d, %d, %d, %d ",Game_FPS,DS_FreeMem()/1024,DS_UsedMem()/1024,TESTVALUE, cacheNumber, cacheCursor, lightProcess.count);
 	#endif
 	#ifdef DEBUGMODE2
-	if(testBuffer)iprintf("\x1b[0;0HMCDS_test %d fps   \n\n%dK;%dK %d, %d, %d, %d ",Game_FPS,latestFree/1024,latestUsed/1024,TESTVALUE, cacheNumber, cacheCursor, lightProcess.count);
+	if(testBuffer)iprintf("\x1b[0;0HMCDS_test %d fps   \n\n%dK;%dK %d, %d, %d, %d ",Game_FPS,DS_FreeMem()/1024,DS_UsedMem()/1024,TESTVALUE, cacheNumber, cacheCursor, lightProcess.count);
 	#endif
 }
 

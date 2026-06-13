@@ -1,5 +1,4 @@
 #include "common/general.h"
-#include "game/displaylistlib.h"
 #include "game/textures.h"
 
 //#define RESERVED_SIZE_DISPLAY_LISTS   (1024*1024) /*4 MB*/

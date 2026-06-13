@@ -9,8 +9,6 @@
 #include "game/player.h"
 #include "game/environment.h"
 
-#define minus(a) (((a)<0)?((a)+1):((a)-1))
-
 typedef struct
 {
 	API_Entity* button;
@@ -51,15 +49,8 @@ void Menu_SelectScheme(API_Entity* e);
 
 void RenderScene()
 {
-		if(!D3D_Screen)sunX+=degreesToAngle(180);
-		else sunX-=degreesToAngle(180);
-		sunZ%=32768;
-		sunX%=32768;
-		if(sunX<0)sunX+=degreesToAngle(360);
-		dayTime=((sunX<16384)?(8192-abs(sunX-8192)):0);
-		dayTime=(dayTime<4096)?(dayTime):4096;
-		nightTime=((sunX<16384)?0:(8192-abs((sunX-16384)-8192)));
-		nightTime=(nightTime<4096)?(nightTime):4096;
+		bool d3dScreen = D3D_IsScreenActive();
+		Environment_PrepareMenuSun(d3dScreen);
 		
 		drawSky();
 		glPushMatrix();
@@ -67,11 +58,11 @@ void RenderScene()
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		gluPerspective(70, 256.0 / 192.0, 0.1, 10000);
-		// if(D3D_Screen)D3D2_gluPerspectivef32(floattof32(70), floattof32(256.0 / 192.0), floattof32(0.1), floattof32(10000));
+		// if(d3dScreen)D3D2_gluPerspectivef32(floattof32(70), floattof32(256.0 / 192.0), floattof32(0.1), floattof32(10000));
 		// else D3D2_gluPerspectivef32_2(floattof32(70), floattof32(256.0 / 192.0), floattof32(0.1), floattof32(10000));
 		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();
-		if(!D3D_Screen)
+		if(!d3dScreen)
 		{
 			glRotateXi(testAngleX);
 			glRotateZi(testAngleZ);
@@ -87,7 +78,7 @@ void RenderScene()
 
 		//ds uses a table for shinyness..this generates a half-ass one
 		glMaterialShinyness();
-		glLight(0, RGB15(31,31,31), minus(mulf32(sinLerp(sunZ),cosLerp(sunX))/8), minus(mulf32(cosLerp(sunZ),cosLerp(sunX))/8), minus(-(sinLerp(sunX)/8)));
+		Environment_ApplyMenuLight();
 
 		glPolyFmt(POLY_ALPHA(31) | POLY_CULL_NONE | POLY_ID(63));
 		
@@ -97,7 +88,7 @@ void RenderScene()
 		drawStars();
 		drawCloud();
 		
-		if(!D3D_Screen)
+		if(!d3dScreen)
 		{
 			glPushMatrix();
 				Game_ApplyMTL(logo);
@@ -112,8 +103,8 @@ void RenderScene()
 			glScalef32(inttof32(SCALEFACTOR),inttof32(SCALEFACTOR),inttof32(SCALEFACTOR));
 			glTranslatef32(-(SUPERCLUSTERSIZE*CLUSTERSIZE*(tilesize2<<6))/2, -(SUPERCLUSTERSIZE*CLUSTERSIZE*(tilesize2<<6))/2,-(64*(tilesize2<<6))/2);
 			// Game_FastBind(blockSuperTexture);
-			Game_ApplyMTL(blockSuperTexture);
-			if(!D3D_Screen)
+			Map_ApplyBlockSuperTexture();
+			if(!d3dScreen)
 			{
 				glCallList(sceneList1);
 				// glCallList(sceneList2);
@@ -123,14 +114,14 @@ void RenderScene()
 			}
 		glPopMatrix(1);
 		
-		sunX+=20;
+		Environment_AdvanceSun(20);
 		
 		glPopMatrix(1);
 		
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		
-		if(D3D_Screen)glOrtho(-128, 127, 191, 0, -1000, 1000);
+		if(d3dScreen)glOrtho(-128, 127, 191, 0, -1000, 1000);
 		else glOrtho(-128, 127, 0, -191, -1000, 1000);
 		
 		glMatrixMode(GL_MODELVIEW);

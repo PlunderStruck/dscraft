@@ -1,9 +1,13 @@
 #include "common/general.h"
-#include "API/dual3D.h"
 
-SpriteEntry D3D_sprites[128];
-bool D3D_Screen;
-pSpriteRotation D3D_spriteRotations = (pSpriteRotation)D3D_sprites;
+static SpriteEntry D3D_sprites[128];
+static bool D3D_Screen;
+static pSpriteRotation D3D_spriteRotations = (pSpriteRotation)D3D_sprites;
+
+bool D3D_IsScreenActive(void)
+{
+	return D3D_Screen;
+}
 
 void D3D_InitSprites(void)
 {

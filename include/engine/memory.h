@@ -16,7 +16,6 @@ typedef struct{
 	bool used;
 }DS_malloc;
 
-extern void *DS_malloc_list[MAX_MALLOC];
 void *GetStackPointer();
 
 void* DS_mAlloc(size_t size, DS_state* state);

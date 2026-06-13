@@ -1,5 +1,5 @@
 #include "common/general.h"
-#include "game/controls.h"
+#include "game/controls_state.h"
 #include "game/interface.h"
 #include "game/map.h"
 #include "game/player.h"
@@ -274,9 +274,9 @@ void controlScheme1(void)
 	if(doubletap)doubletap++;
 	if(doubletap>15)doubletap=0;
 	if((keysDown() & KEY_TOUCH) && !doubletap)doubletap=1;
-	else if((keysDown() & KEY_TOUCH) && doubletap && !noclip && (Player.inWater || !Player.vector.z) && !invOpen && !overButtons){Player.vector.z += 850;doubletap=0;}
+	else if((keysDown() & KEY_TOUCH) && doubletap && !noclip && (Player.inWater || !Player.vector.z) && !Interface_IsInventoryOpen() && !Interface_IsOverButtons()){Player.vector.z += 850;doubletap=0;}
 	
-	if(updateInterface() && !overButtons && (keysHeld() & KEY_TOUCH))
+	if(updateInterface() && !Interface_IsOverButtons() && (keysHeld() & KEY_TOUCH))
 	{
 		if(!(keysDown() & KEY_TOUCH))
 		{

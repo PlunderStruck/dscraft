@@ -13,6 +13,21 @@
 #define waterm(a) (((a)>=WATERTYPE)?(a):(300))
 #define CLUSTER_FIRST	0x00000002
 
+static MTL_img* cursorTexture;
+static MTL_img* waterTexture;
+static MTL_img* blockSuperTexture;
+static MTL_img *crossHair;
+
+void Map_ApplyBlockSuperTexture(void)
+{
+	Game_ApplyMTL(blockSuperTexture);
+}
+
+void Map_ApplyCrossHair(void)
+{
+	Game_ApplyMTL(crossHair);
+}
+
 // int cullMagic;
 u16 cullMagic;
 bool testBuffer;

@@ -4,13 +4,6 @@
 #include "game/block_types.h"
 #include "game/vect3D.h"
 
-#ifndef MTL_IMG_TYPEDEF
-#define MTL_IMG_TYPEDEF
-typedef struct MTL_img MTL_img;
-#endif
-
-typedef struct player_struct player_struct;
-
 #define LADDERTYPE 40
 #define DOORTYPE 44
 
@@ -203,10 +196,6 @@ extern list_struct openList, closedList;
 
 extern toProcessList_struct lightProcess;
 
-extern MTL_img* cursorTexture;
-extern MTL_img* waterTexture;
-extern MTL_img* blockSuperTexture;
-extern MTL_img *crossHair;
 extern u8 degradTable[8*8*5];
 // u8 lightTable[13*13*13*6];
 extern u8 lightTable[16*16*16*14];
@@ -259,6 +248,8 @@ void initFilesystem(void);
 void freeQuadCache(void);
 void freeLightCache(void);
 void loadBlockTextures(bool spr, bool tex);
+void Map_ApplyBlockSuperTexture(void);
+void Map_ApplyCrossHair(void);
 void initSuperCluster(map_struct* m);
 void generateMapQuadList(map_struct* m);
 void initMap(map_struct* m, vect3D size);
@@ -475,7 +466,6 @@ static inline void releaseQuad(quad_struct** q)
 	}//test
 }
 
-void drawTestMapWithPlayer(map_struct* m, player_struct* player, void (*updatePlayerFn)(player_struct*), void (*playerCameraFn)(player_struct*, bool));
 void globalSaveMap(map_struct* m);
 void createTestMap(map_struct* m);
 void translateSuperCluster(map_struct* m, u8 dir);

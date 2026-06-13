@@ -1,5 +1,4 @@
 #include "common/general.h"
-#include "game/environment.h"
 #include "game/map.h"
 #include "game/player_types.h"
 #include "game/textures.h"
@@ -8,7 +7,22 @@
 
 // #define LOGOSIZE 128
 #define LOGOSIZE 96
+#define STARS 32
+// #define SUNSIZE 64
+#define SUNSIZE 96
+#define STARSIZE 5
+#define DAWNSIZE 256
+#define CLOUDSIZE 511
 #define sunmacro(a,b) (((a)<(b))?(0):(a))
+
+static MTL_img *cloudTexture, *sunTexture, *moonTexture;
+static int sunX, sunZ;
+static int dayTime, nightTime;
+static u8 skyR, skyG, skyB;
+static u8 glareR, glareG, glareB;
+static u8 glareLength;
+static bool envMenu;
+static s16 cloudcnt;
 
 typedef struct
 {
@@ -19,6 +33,50 @@ typedef struct
 static star_struct stars[STARS];
 
 u32* starsList;
+
+static int envMinus(int a)
+{
+	return (a<0) ? (a+1) : (a-1);
+}
+
+static void Environment_UpdateDayNight(void)
+{
+	sunZ%=32768;
+	sunX%=32768;
+	if(sunX<0)sunX+=degreesToAngle(360);
+	dayTime=((sunX<16384)?(8192-abs(sunX-8192)):0);
+	dayTime=(dayTime<4096)?(dayTime):4096;
+	nightTime=((sunX<16384)?0:(8192-abs((sunX-16384)-8192)));
+	nightTime=(nightTime<4096)?(nightTime):4096;
+}
+
+void Environment_PrepareMenuSun(bool d3dScreen)
+{
+	if(!d3dScreen)sunX+=degreesToAngle(180);
+	else sunX-=degreesToAngle(180);
+	Environment_UpdateDayNight();
+}
+
+void Environment_ApplyMenuLight(void)
+{
+	glLight(0, RGB15(31,31,31), envMinus(mulf32(sinLerp(sunZ),cosLerp(sunX))/8), envMinus(mulf32(cosLerp(sunZ),cosLerp(sunX))/8), envMinus(-(sinLerp(sunX)/8)));
+}
+
+void Environment_AdvanceSun(s16 delta)
+{
+	sunX+=delta;
+}
+
+s16 Environment_GetSunSpriteAngle(void)
+{
+	return sunX+8192;
+}
+
+void Environment_AdvanceClock(s16 sunDelta, s16 cloudDelta)
+{
+	sunX+=sunDelta;
+	cloudcnt+=cloudDelta;
+}
 
 void initStars(void)
 {
@@ -198,8 +256,7 @@ void drawLogo()
 void drawSun()
 {
 	sunX+=3;
-	dayTime=((sunX<16384)?(8192-abs(sunX-8192)):0);
-	dayTime=(dayTime<4096)?(dayTime):4096;
+	Environment_UpdateDayNight();
 	// glPolyFmt(POLY_ALPHA(31) /*| POLY_FORMAT_LIGHT0 | POLY_FORMAT_LIGHT1*/ | POLY_CULL_NONE);
 	glPolyFmt(POLY_ALPHA(31) | POLY_CULL_BACK | POLY_ID(31));
 	glPushMatrix();
@@ -229,8 +286,6 @@ void drawSun()
 
 		glEnd();
 	glPopMatrix(1);
-	sunZ%=32768;
-	sunX%=32768;
 	if(!envMenu)
 	{
 		if(dayTime)
@@ -324,8 +379,7 @@ void drawDawn()
 
 void drawMoon()
 {
-	nightTime=((sunX<16384)?0:(8192-abs((sunX-16384)-8192)));
-	nightTime=(nightTime<4096)?(nightTime):4096;
+	Environment_UpdateDayNight();
 	u8 a=((nightTime*31)/4096);
 	if(!a)return;
 	glPolyFmt(POLY_ALPHA(a) | POLY_CULL_BACK | POLY_ID(21));
