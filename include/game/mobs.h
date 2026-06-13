@@ -2,7 +2,7 @@
 #ifndef MOBS_9
 #define MOBS_9
 
-#include "game/map.h"
+#include "game/vect3D.h"
 
 typedef struct
 {
@@ -24,7 +24,7 @@ typedef struct
 	u16 count;
 }mobList_struct;
 
-mobList_struct mobList;
+extern mobList_struct mobList;
 
 #endif
 #endif

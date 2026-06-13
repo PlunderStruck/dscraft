@@ -409,8 +409,6 @@ void Menu_SelectScheme(API_Entity* e)
 
 void Menu_Init(void)
 {
-	int i;
-	
 	#ifdef FATONLY
 		// chdir("fat:/");
 		// chdir(ROOT);//!ROOT!
@@ -576,7 +574,6 @@ void Menu_Init(void)
 //29;106 : 105;139
 void Menu_Frame(void)
 {
-	int i;
 	Game_UpdateD3D();
 	RenderScene();
 	

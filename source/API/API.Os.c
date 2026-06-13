@@ -18,6 +18,36 @@ API_Entity* API_ToCallEntity;
 API_Entity* Cursor;
 API_Entity* DefaultCursor;
 
+static void API_BindBackground(MTL_img* background, int* width, int* height)
+{
+	if(background==NULL)
+	{
+		Texture_Unbind();
+		*width=0;
+		*height=0;
+		return;
+	}
+	Game_ApplyMTL(background);
+	*width=background->width;
+	*height=background->height;
+}
+
+static void API_DrawTexturedQuad(int width, int height)
+{
+	glBegin(GL_QUADS);
+	
+		GFX_TEX_COORD = 0;
+		GFX_VERTEX10 = v1;
+		GFX_TEX_COORD = TEXTURE_PACK(0, 16*height);
+		GFX_VERTEX10 = v2;
+		GFX_TEX_COORD = TEXTURE_PACK(16*width, 16*height);
+		GFX_VERTEX10 = v3;
+		GFX_TEX_COORD = TEXTURE_PACK(16*width, 0);
+		GFX_VERTEX10 = v4;
+
+	glEnd();
+}
+
 API_Entity* API_CreateEntity(API_EntList *cl)
 {
 	API_ListElement *ce=malloc(sizeof(API_ListElement));
@@ -60,30 +90,8 @@ void API_DrawWindow(void* e)
 	int width, height;
 	// NOGBA("lala2");
 	
-	if(data->background==NULL)
-	{
-		Texture_Unbind();
-		width=0;
-		height=0;
-	}else 
-	{
-		Game_ApplyMTL(data->background);
-		width=data->background->width;
-		height=data->background->height;
-	}
-	
-	glBegin(GL_QUADS);
-	
-		GFX_TEX_COORD = 0;
-		GFX_VERTEX10 = v1;
-		GFX_TEX_COORD = TEXTURE_PACK(0, 16*height);
-		GFX_VERTEX10 = v2;
-		GFX_TEX_COORD = TEXTURE_PACK(16*width, 16*height);
-		GFX_VERTEX10 = v3;
-		GFX_TEX_COORD = TEXTURE_PACK(16*width, 0);
-		GFX_VERTEX10 = v4;
-
-	glEnd();
+	API_BindBackground(data->background, &width, &height);
+	API_DrawTexturedQuad(width, height);
 }
 
 void API_DrawLabel(void* e)
@@ -153,30 +161,8 @@ void API_UpdateButton(void* e)
 		break;
 	}
 	
-	if(data->background==NULL)
-	{
-		Texture_Unbind();
-		width=0;
-		height=0;
-	}else 
-	{
-		Game_ApplyMTL(data->background);
-		width=data->background->width;
-		height=data->background->height;
-	}
-	
-	glBegin(GL_QUADS);
-	
-		GFX_TEX_COORD = 0;
-		GFX_VERTEX10 = v1;
-		GFX_TEX_COORD = TEXTURE_PACK(0, 16*height);
-		GFX_VERTEX10 = v2;
-		GFX_TEX_COORD = TEXTURE_PACK(16*width, 16*height);
-		GFX_VERTEX10 = v3;
-		GFX_TEX_COORD = TEXTURE_PACK(16*width, 0);
-		GFX_VERTEX10 = v4;
-
-	glEnd();
+	API_BindBackground(data->background, &width, &height);
+	API_DrawTexturedQuad(width, height);
 }
 
 void API_UpdateCheckBox(void* e)
@@ -226,30 +212,8 @@ void API_UpdateCheckBox(void* e)
 		break;
 	}
 	
-	if(data->background==NULL)
-	{
-		Texture_Unbind();
-		width=0;
-		height=0;
-	}else 
-	{
-		Game_ApplyMTL(data->background);
-		width=data->background->width;
-		height=data->background->height;
-	}
-	
-	glBegin(GL_QUADS);
-	
-		GFX_TEX_COORD = 0;
-		GFX_VERTEX10 = v1;
-		GFX_TEX_COORD = TEXTURE_PACK(0, 16*height);
-		GFX_VERTEX10 = v2;
-		GFX_TEX_COORD = TEXTURE_PACK(16*width, 16*height);
-		GFX_VERTEX10 = v3;
-		GFX_TEX_COORD = TEXTURE_PACK(16*width, 0);
-		GFX_VERTEX10 = v4;
-
-	glEnd();
+	API_BindBackground(data->background, &width, &height);
+	API_DrawTexturedQuad(width, height);
 }
 
 void API_UpdateSlider(void* e)
@@ -296,30 +260,8 @@ void API_UpdateSlider(void* e)
 		}
 	}
 	
-	if(data->background==NULL)
-	{
-		Texture_Unbind();
-		width=0;
-		height=0;
-	}else 
-	{
-		Game_ApplyMTL(data->background);
-		width=data->background->width;
-		height=data->background->height;
-	}
-	
-	glBegin(GL_QUADS);
-	
-		GFX_TEX_COORD = 0;
-		GFX_VERTEX10 = v1;
-		GFX_TEX_COORD = TEXTURE_PACK(0, 16*height);
-		GFX_VERTEX10 = v2;
-		GFX_TEX_COORD = TEXTURE_PACK(16*width, 16*height);
-		GFX_VERTEX10 = v3;
-		GFX_TEX_COORD = TEXTURE_PACK(16*width, 0);
-		GFX_VERTEX10 = v4;
-
-	glEnd();
+	API_BindBackground(data->background, &width, &height);
+	API_DrawTexturedQuad(width, height);
 	
 	glPushMatrix();
 		GLvector scaleV;
@@ -352,18 +294,7 @@ void API_UpdateSlider(void* e)
 		
 		glScalev(&scaleV);
 		
-		glBegin(GL_QUADS);
-		
-			GFX_TEX_COORD = 0;
-			GFX_VERTEX10 = v1;
-			GFX_TEX_COORD = TEXTURE_PACK(0, 16*height);
-			GFX_VERTEX10 = v2;
-			GFX_TEX_COORD = TEXTURE_PACK(16*width, 16*height);
-			GFX_VERTEX10 = v3;
-			GFX_TEX_COORD = TEXTURE_PACK(16*width, 0);
-			GFX_VERTEX10 = v4;
-
-		glEnd();
+		API_DrawTexturedQuad(width, height);
 	glPopMatrix(1);
 }
 
@@ -413,30 +344,8 @@ void API_UpdateVSlider(void* e)
 		}
 	}
 	
-	if(data->background==NULL)
-	{
-		Texture_Unbind();
-		width=0;
-		height=0;
-	}else 
-	{
-		Game_ApplyMTL(data->background);
-		width=data->background->width;
-		height=data->background->height;
-	}
-	
-	glBegin(GL_QUADS);
-	
-		GFX_TEX_COORD = 0;
-		GFX_VERTEX10 = v1;
-		GFX_TEX_COORD = TEXTURE_PACK(0, 16*height);
-		GFX_VERTEX10 = v2;
-		GFX_TEX_COORD = TEXTURE_PACK(16*width, 16*height);
-		GFX_VERTEX10 = v3;
-		GFX_TEX_COORD = TEXTURE_PACK(16*width, 0);
-		GFX_VERTEX10 = v4;
-
-	glEnd();
+	API_BindBackground(data->background, &width, &height);
+	API_DrawTexturedQuad(width, height);
 	
 	glPushMatrix();
 		GLvector scaleV;
@@ -469,18 +378,7 @@ void API_UpdateVSlider(void* e)
 		
 		glScalev(&scaleV);
 		
-		glBegin(GL_QUADS);
-		
-			GFX_TEX_COORD = 0;
-			GFX_VERTEX10 = v1;
-			GFX_TEX_COORD = TEXTURE_PACK(0, 16*height);
-			GFX_VERTEX10 = v2;
-			GFX_TEX_COORD = TEXTURE_PACK(16*width, 16*height);
-			GFX_VERTEX10 = v3;
-			GFX_TEX_COORD = TEXTURE_PACK(16*width, 0);
-			GFX_VERTEX10 = v4;
-
-		glEnd();
+		API_DrawTexturedQuad(width, height);
 	glPopMatrix(1);
 }
 
@@ -710,11 +608,11 @@ API_Entity* API_CreateCheckBoxFather(s16 x, s16 y, API_function function, API_En
 	return e;
 }
 
-API_Entity* API_CreateSlider(s16 x, s16 y, u8 size, API_function function, char* text)
+static API_Entity* API_CreateSliderBase(s16 x, s16 y, u8 sizeX, u8 sizeY, API_function function, API_drawfunction draw)
 {
 	API_Entity* e=API_CreateEntity(&API_List);
 	e->data=malloc(sizeof(APIE_SliderData));
-	e->Draw=(API_drawfunction)&API_UpdateSlider;
+	e->Draw=draw;
 	e->Position.x=inttof32(x);
 	e->Position.y=inttof32(y+3);
 	e->t_Position.x=inttof32(x);
@@ -734,19 +632,24 @@ API_Entity* API_CreateSlider(s16 x, s16 y, u8 size, API_function function, char*
 	e->outline_color=0;
 	
 	//int width=strlen(text)*8;
-	e->Size.x=inttof32(size);
-	e->Size.y=inttof32(4);
-	e->b_Size.x=inttof32(size);
-	e->b_Size.y=inttof32(4);
-	e->t_Size.x=inttof32(size);
-	e->t_Size.y=inttof32(4);
+	e->Size.x=inttof32(sizeX);
+	e->Size.y=inttof32(sizeY);
+	e->b_Size.x=inttof32(sizeX);
+	e->b_Size.y=inttof32(sizeY);
+	e->t_Size.x=inttof32(sizeX);
+	e->t_Size.y=inttof32(sizeY);
 
 	((APIE_SliderData*)e->data)->selected=false;
 	((APIE_SliderData*)e->data)->background=NULL;
 	((APIE_SliderData*)e->data)->function=function;
 	((APIE_SliderData*)e->data)->position=0;
-	//if(strlen(text)>0)((APIE_CheckBoxData*)e->data)->label=API_CreateLabelFather(13, 0, RGB15(0,0,0), e, text);
+	((APIE_SliderData*)e->data)->oldpos=0;
 	return e;
+}
+
+API_Entity* API_CreateSlider(s16 x, s16 y, u8 size, API_function function, char* text)
+{
+	return API_CreateSliderBase(x, y, size, 4, function, (API_drawfunction)&API_UpdateSlider);
 }
 
 API_Entity* API_CreateSliderFather(s16 x, s16 y, u8 size, API_function function, API_Entity* father, char* text, bool halpha)
@@ -761,41 +664,7 @@ API_Entity* API_CreateSliderFather(s16 x, s16 y, u8 size, API_function function,
 
 API_Entity* API_CreateVSlider(s16 x, s16 y, u8 size, API_function function, char* text)
 {
-	API_Entity* e=API_CreateEntity(&API_List);
-	e->data=malloc(sizeof(APIE_SliderData));
-	e->Draw=(API_drawfunction)&API_UpdateVSlider;
-	e->Position.x=inttof32(x);
-	e->Position.y=inttof32(y+3);
-	e->t_Position.x=inttof32(x);
-	e->t_Position.y=inttof32(y+3);
-	e->alpha=31<<10;
-	e->t_alpha=31<<10;
-	e->type=4;
-	e->timep=0;
-	e->t_timep=0;
-	e->times=0;
-	e->t_times=0;
-	e->timea=0;
-	e->t_timea=0;
-	e->prio=400;
-	e->outline=1;
-	e->color=RGB15(21,21,21);
-	e->outline_color=0;
-	
-	//int width=strlen(text)*8;
-	e->Size.x=inttof32(4);
-	e->Size.y=inttof32(size);
-	e->b_Size.x=inttof32(4);
-	e->b_Size.y=inttof32(size);
-	e->t_Size.x=inttof32(4);
-	e->t_Size.y=inttof32(size);
-
-	((APIE_SliderData*)e->data)->selected=false;
-	((APIE_SliderData*)e->data)->background=NULL;
-	((APIE_SliderData*)e->data)->function=function;
-	((APIE_SliderData*)e->data)->position=0;
-	//if(strlen(text)>0)((APIE_CheckBoxData*)e->data)->label=API_CreateLabelFather(13, 0, RGB15(0,0,0), e, text);
-	return e;
+	return API_CreateSliderBase(x, y, 4, size, function, (API_drawfunction)&API_UpdateVSlider);
 }
 
 API_Entity* API_CreateVSliderFather(s16 x, s16 y, u8 size, API_function function, API_Entity* father, char* text, bool halpha)
@@ -917,12 +786,9 @@ void API_UpdateScene(API_EntList *cl)
 		// NOGBA("lala???");
 	API_ListElement *cn, *ce=cl->last;
 	API_Entity *e, *f;
-	GLvector scaleV, scaleVf, scaleVs, scaleVsh, scaleVo;
+	GLvector scaleV, scaleVf, scaleVo;
 	touchRead(&API_Touch);
-	
-	scaleVsh.x = inttov16(101)/100;
-	scaleVsh.y = inttov16(101)/100;
-	scaleVsh.z = inttov16(101)/100;
+
 	// if(Cursor)NOGBA("cursor : %s",((APIE_LabelData*)((APIE_ButtonData*)Cursor->data)->label->data)->string);
 	// if(keysHeld() & KEY_Y)TESTLABEL->prio--;
 	// if(keysHeld() & KEY_X)TESTLABEL->prio++;
@@ -1095,7 +961,7 @@ void API_UpdateScene(API_EntList *cl)
 void API_ComputeDirectionsEntity(API_EntList *cl, API_Entity *e, u8 force)
 {
 	API_ListElement *cn, *ce=cl->last;
-	API_Entity *e2, *f;
+	API_Entity *e2;
 	int dl,dr,du,dd;
 	if(ce==NULL)return;
 	coord2Ds pos=e->Position;
@@ -1137,7 +1003,7 @@ void API_ComputeDirectionsEntity(API_EntList *cl, API_Entity *e, u8 force)
 void API_ComputeDirections(API_EntList *cl, u8 force)
 {
 	API_ListElement *cn, *ce=cl->last;
-	API_Entity *e, *f;
+	API_Entity *e;
 	if(ce==NULL)return;
 	do{
 		cn=ce->previous;
@@ -1194,7 +1060,7 @@ void API_Init()
 	buttonBlock=NULL;
 	Cursor=NULL;
 	DefaultCursor=NULL;
-	loadFont(&APIfont, CHARSIZE);
+	loadAPIFont();
 	cull=true;
 	API_InputLocked=false;
 	API_InputLockAllowedFunction=NULL;

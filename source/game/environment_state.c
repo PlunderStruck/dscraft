@@ -1,8 +1,6 @@
 #include "common/general.h"
 #include "game/environment.h"
 
-star_struct stars[STARS];
-
 MTL_img *cloudTexture, *sunTexture, *moonTexture;
 
 int sunX, sunZ;

@@ -5,18 +5,8 @@
 
 #define CHARSIZE 16
 
-typedef struct
-{
-	MTL_img tex;
-	u8 charsize;
-}font;
-
-font APIfont;
-font* currentFont;
-
-void setFont(font* f);
-void loadFont(font* f, u8 charsize);
-void drawChar(char c, u16 color, int32 x, int32 y);
-void drawString(char* s, u16 color, int32 size, int32 x, int32 y);
+void loadAPIFont(void);
+void drawChar(char c, u16 color, s32 x, s32 y);
+void drawString(char* s, u16 color, s32 size, s32 x, s32 y);
 
 #endif

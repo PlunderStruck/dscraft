@@ -9,10 +9,10 @@
 #define sign(a) (((a)==0)?(0):(((a)<0)?(-1):(1)))
 #define positive(a) (((a)>0)?(1):(0))
 
-bool IntersectedPolygon(vect3D* vPoly, vect3D* vLine, int verticeCount, int32* originDistance, int32* realDist);
-vect3D ClosestPointOnLine(vect3D vA, vect3D vD, int length, int32* dist, vect3D vPoint);
-int32 sqMagnitude(vect3D vNormal);
-int32 sqDistance(vect3D vA, vect3D vB);
+bool IntersectedPolygon(vect3D* vPoly, vect3D* vLine, int verticeCount, s32* originDistance, s32* realDist);
+vect3D ClosestPointOnLine(vect3D vA, vect3D vD, int length, s32* dist, vect3D vPoint);
+s32 sqMagnitude(vect3D vNormal);
+s32 sqDistance(vect3D vA, vect3D vB);
 void testPoint(map_struct* m, vect3D point, vect3D* vector);
 
 void initPlayer(player_struct* p)
@@ -21,7 +21,7 @@ void initPlayer(player_struct* p)
 	// p->position=(vect3D){0,0,(getHighest(&map, SUPERCLUSTERSIZE*CLUSTERSIZE/2, SUPERCLUSTERSIZE*CLUSTERSIZE/2)+3-map.size.z/2)*rTilesize2};
 	p->position=(vect3D){(map.header->spawnX-(map.offset.x+SUPERCLUSTERSIZE/2)*CLUSTERSIZE)*rTilesize2,(map.header->spawnY-(map.offset.y+SUPERCLUSTERSIZE/2)*CLUSTERSIZE)*rTilesize2,(getHighest(&map, map.header->spawnX, map.header->spawnY)+3-map.size.z/2)*rTilesize2};
 	if(map.header->magicVersionNumber==VERSIONMAGIC)p->position.z=map.header->spawnZ;
-	NOGBA("player pos : %d %d",p->position.x,p->position.y,p->position.z);
+	NOGBA("player pos : %ld %ld %ld",p->position.x,p->position.y,p->position.z);
 	p->vector=(vect3D){0,0,0};
 	p->angleZ=0;
 	p->angleX=0;
@@ -70,7 +70,7 @@ void saveSettings(void)
 	fclose(f);
 }
 
-inline vect3D v10vector(map_struct* m, int32 a)
+inline vect3D v10vector(map_struct* m, s32 a)
 {
 	vect3D v;
 	v.x=(((a&1023))<<6)*SCALEFACTOR-(SUPERCLUSTERSIZE*CLUSTERSIZE*rTilesize2)/2;
@@ -81,14 +81,12 @@ inline vect3D v10vector(map_struct* m, int32 a)
 
 s8 clusterCheck(map_struct* m, vect3D* line, int i, int j, int k)
 {
-	int32 originDistance=0, realDist=0, foDist=inttof32(100);
+	s32 originDistance=0, realDist=0, foDist=inttof32(100);
 	s8 dir=-1;
 	vect3D poly[4];
 	Game_ApplyMTL(NULL);
-	u8 t=0;
 	if(!tangible(*getBlockP(m,i,j,k+1)))
 	{
-		t++;
 		poly[0]=v10vector(m, NORMAL_PACK((tilesize+tilesize2*i)-m->offset.x*bsizeR,(-tilesize+tilesize2*j)-m->offset.y*bsizeR,(tilesize+tilesize2*k)));
 		poly[1]=v10vector(m, NORMAL_PACK((tilesize+tilesize2*i)-m->offset.x*bsizeR,(tilesize+tilesize2*j)-m->offset.y*bsizeR,(tilesize+tilesize2*k)));
 		poly[2]=v10vector(m, NORMAL_PACK((-tilesize+tilesize2*i)-m->offset.x*bsizeR,(tilesize+tilesize2*j)-m->offset.y*bsizeR,(tilesize+tilesize2*k)));
@@ -104,7 +102,6 @@ s8 clusterCheck(map_struct* m, vect3D* line, int i, int j, int k)
 	}
 	if(!tangible(*getBlockP(m,i,j,k-1)))
 	{	
-		t++;
 		poly[0]=v10vector(m, NORMAL_PACK((-tilesize+tilesize2*i)-m->offset.x*bsizeR,(-tilesize+tilesize2*j)-m->offset.y*bsizeR,(-tilesize+tilesize2*k)));
 		poly[1]=v10vector(m, NORMAL_PACK((-tilesize+tilesize2*i)-m->offset.x*bsizeR,(tilesize+tilesize2*j)-m->offset.y*bsizeR,(-tilesize+tilesize2*k)));
 		poly[2]=v10vector(m, NORMAL_PACK((tilesize+tilesize2*i)-m->offset.x*bsizeR,(tilesize+tilesize2*j)-m->offset.y*bsizeR,(-tilesize+tilesize2*k)));
@@ -121,7 +118,6 @@ s8 clusterCheck(map_struct* m, vect3D* line, int i, int j, int k)
 	
 	if(!tangible(*getBlockP(m,i+1,j,k)))
 	{
-		t++;
 		poly[0]=v10vector(m, NORMAL_PACK((tilesize+tilesize2*i)-m->offset.x*bsizeR,(tilesize+tilesize2*j)-m->offset.y*bsizeR,(tilesize+tilesize2*k)));
 		poly[1]=v10vector(m, NORMAL_PACK((tilesize+tilesize2*i)-m->offset.x*bsizeR,(-tilesize+tilesize2*j)-m->offset.y*bsizeR,(tilesize+tilesize2*k)));
 		poly[2]=v10vector(m, NORMAL_PACK((tilesize+tilesize2*i)-m->offset.x*bsizeR,(-tilesize+tilesize2*j)-m->offset.y*bsizeR,(-tilesize+tilesize2*k)));
@@ -137,7 +133,6 @@ s8 clusterCheck(map_struct* m, vect3D* line, int i, int j, int k)
 	}
 	if(!tangible(*getBlockP(m,i-1,j,k)))
 	{
-		t++;
 		poly[0]=v10vector(m, NORMAL_PACK((-tilesize+tilesize2*i)-m->offset.x*bsizeR,(-tilesize+tilesize2*j)-m->offset.y*bsizeR,(tilesize+tilesize2*k)));
 		poly[1]=v10vector(m, NORMAL_PACK((-tilesize+tilesize2*i)-m->offset.x*bsizeR,(tilesize+tilesize2*j)-m->offset.y*bsizeR,(tilesize+tilesize2*k)));
 		poly[2]=v10vector(m, NORMAL_PACK((-tilesize+tilesize2*i)-m->offset.x*bsizeR,(tilesize+tilesize2*j)-m->offset.y*bsizeR,(-tilesize+tilesize2*k)));
@@ -154,7 +149,6 @@ s8 clusterCheck(map_struct* m, vect3D* line, int i, int j, int k)
 	
 	if(!tangible(*getBlockP(m,i,j+1,k)))
 	{
-		t++;
 		poly[0]=v10vector(m, NORMAL_PACK((-tilesize+tilesize2*i)-m->offset.x*bsizeR,(tilesize+tilesize2*j)-m->offset.y*bsizeR,(tilesize+tilesize2*k)));
 		poly[1]=v10vector(m, NORMAL_PACK((tilesize+tilesize2*i)-m->offset.x*bsizeR,(tilesize+tilesize2*j)-m->offset.y*bsizeR,(tilesize+tilesize2*k)));
 		poly[2]=v10vector(m, NORMAL_PACK((tilesize+tilesize2*i)-m->offset.x*bsizeR,(tilesize+tilesize2*j)-m->offset.y*bsizeR,(-tilesize+tilesize2*k)));
@@ -170,7 +164,6 @@ s8 clusterCheck(map_struct* m, vect3D* line, int i, int j, int k)
 	}
 	if(!tangible(*getBlockP(m,i,j-1,k)))
 	{
-		t++;
 		poly[0]=v10vector(m, NORMAL_PACK((tilesize+tilesize2*i)-m->offset.x*bsizeR,(-tilesize+tilesize2*j)-m->offset.y*bsizeR,(tilesize+tilesize2*k)));
 		poly[1]=v10vector(m, NORMAL_PACK((-tilesize+tilesize2*i)-m->offset.x*bsizeR,(-tilesize+tilesize2*j)-m->offset.y*bsizeR,(tilesize+tilesize2*k)));
 		poly[2]=v10vector(m, NORMAL_PACK((-tilesize+tilesize2*i)-m->offset.x*bsizeR,(-tilesize+tilesize2*j)-m->offset.y*bsizeR,(-tilesize+tilesize2*k)));
@@ -221,7 +214,6 @@ void updatePlayer(player_struct* p)
 	
 	// bool test=IntersectedPolygon(testPoly, testLine, 4);
 	map_struct* m=&map;
-	quad_struct* q=NULL;
 	/*for(i=0;i<10 && i<closedList.size && !q;i++)
 	{
 		listElement_struct* le=&closedList.elements[i];
@@ -237,9 +229,9 @@ void updatePlayer(player_struct* p)
 	pj=Player.position.y/(rTilesize2);//+(m->size.y)/2;
 	pk=Player.position.z/(rTilesize2);//+(m->size.z)/2;
 	vect3D r;
-	int32 sqrTilesize=2*mulf32(rTilesize,rTilesize);
-	int32 mindist=inttof32(7);
-	int32 dist;
+	s32 sqrTilesize=2*mulf32(rTilesize,rTilesize);
+	s32 mindist=inttof32(7);
+	s32 dist;
 	bool got=false;
 	PROF_START(); //PROBLEEEEEEMES (superclustersize etc.)
 	for(i=pi-3;i<=pi+3;i++)
@@ -286,6 +278,7 @@ void updatePlayer(player_struct* p)
 	}
 		int time;
 		PROF_END(time);
+			(void)time;
 	// printf("\nTEST : %d, %d   ", q!=NULL, time);
 	
 	if(cull)if(!m->transitioning[2] && !m->transitioning[3] && !m->transitioning[1] && !m->transitioning[0])
@@ -476,24 +469,24 @@ static inline vect3D Vector(vect3D vPoint1, vect3D vPoint2)
 	return vVector;
 }
 
-int32 Magnitude(vect3D vNormal)
+s32 Magnitude(vect3D vNormal)
 {
 	return sqrtf32( mulf32(vNormal.x, vNormal.x) + mulf32(vNormal.y, vNormal.y) + mulf32(vNormal.z, vNormal.z) );
 }
 
-int32 sqMagnitude(vect3D vNormal)
+s32 sqMagnitude(vect3D vNormal)
 {
 	return ( mulf32(vNormal.x, vNormal.x) + mulf32(vNormal.y, vNormal.y) + mulf32(vNormal.z, vNormal.z) );
 }
 
-int32 sqDistance(vect3D vA, vect3D vB)
+s32 sqDistance(vect3D vA, vect3D vB)
 {
 	return sqMagnitude(Vector(vA,vB));
 }
 
 vect3D Normalize(vect3D vNormal)
 {
-	int32 magnitude = divf32(inttof32(1),Magnitude(vNormal));
+	s32 magnitude = divf32(inttof32(1),Magnitude(vNormal));
 	
 	vNormal.x = mulf32(vNormal.x,magnitude);
 	vNormal.y = mulf32(vNormal.y,magnitude);
@@ -514,16 +507,16 @@ vect3D Normal(vect3D* vTriangle)
 	return vNormal;
 }
 
-int32 PlaneDistance(vect3D Normal, vect3D Point)
+s32 PlaneDistance(vect3D Normal, vect3D Point)
 {	
-	int32 distance = 0;
+	s32 distance = 0;
 	distance = - (mulf32(Normal.x, Point.x) + mulf32(Normal.y, Point.y) + mulf32(Normal.z, Point.z));
 	return distance;
 }
 
-bool IntersectedPlane(vect3D* vPoly, vect3D* vLine, vect3D* vNormal, int32* originDistance)
+bool IntersectedPlane(vect3D* vPoly, vect3D* vLine, vect3D* vNormal, s32* originDistance)
 {
-	int32 distance1=0, distance2=0;
+	s32 distance1=0, distance2=0;
 	
 	*vNormal = Normal(vPoly);
 	
@@ -553,22 +546,22 @@ bool IntersectedPlane(vect3D* vPoly, vect3D* vLine, vect3D* vNormal, int32* orig
 /////
 /////////////////////////////////// DOT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*
 
-int32 Dot(vect3D vVector1, vect3D vVector2) 
+s32 Dot(vect3D vVector1, vect3D vVector2) 
 {
 	return ( mulf32(vVector1.x, vVector2.x) + mulf32(vVector1.y, vVector2.y) + mulf32(vVector1.z, vVector2.z) );
 }
 
-int32 AngleBetweenVectors(vect3D Vector1, vect3D Vector2)
+s32 AngleBetweenVectors(vect3D Vector1, vect3D Vector2)
 {
-	int32 dotProduct = Dot(Vector1, Vector2);				
+	s32 dotProduct = Dot(Vector1, Vector2);				
 
-	int32 vectorsMagnitude = mulf32(Magnitude(Vector1), Magnitude(Vector2));
+	s32 vectorsMagnitude = mulf32(Magnitude(Vector1), Magnitude(Vector2));
 
 	// Get the arc cosine of the (dotProduct / vectorsMagnitude) which is the angle in RADIANS.
 	// (IE.   PI/2 radians = 90 degrees      PI radians = 180 degrees    2*PI radians = 360 degrees)
 	// To convert radians to degress use this equation:   radians * (PI / 180)
 	// TO convert degrees to radians use this equation:   degrees * (180 / PI)
-	int32 angle = /*angleToDegrees*/(acosLerp(divf32(dotProduct, vectorsMagnitude)));
+	s32 angle = /*angleToDegrees*/(acosLerp(divf32(dotProduct, vectorsMagnitude)));
 
 	/*// Here we make sure that the angle is not a -1.#IND0000000 number, which means indefinate.
 	// acos() thinks it's funny when it returns -1.#IND0000000.  If we don't do this check,
@@ -583,10 +576,10 @@ int32 AngleBetweenVectors(vect3D Vector1, vect3D Vector2)
 	return( angle );
 }
 											
-vect3D IntersectionPoint(vect3D vNormal, vect3D* vLine, int32 distance, int32 *realDist)
+vect3D IntersectionPoint(vect3D vNormal, vect3D* vLine, s32 distance, s32 *realDist)
 {
 	vect3D vPoint, vLineDir;		// Variables to hold the point and the line's direction
-	int32 Numerator, Denominator, dist;
+	s32 Numerator, Denominator, dist;
 
 	// Here comes the confusing part.  We need to find the 3D point that is actually
 	// on the plane.  Here are some steps to do that:
@@ -636,9 +629,9 @@ vect3D IntersectionPoint(vect3D vNormal, vect3D* vLine, int32 distance, int32 *r
 	// This essentially moves the point along the vector to a certain distance.  This now gives
 	// us the intersection point.  Yay!
 
-	vPoint.x = (int32)(vLine[0].x + mulf32(vLineDir.x, dist));
-	vPoint.y = (int32)(vLine[0].y + mulf32(vLineDir.y, dist));
-	vPoint.z = (int32)(vLine[0].z + mulf32(vLineDir.z, dist));
+	vPoint.x = (s32)(vLine[0].x + mulf32(vLineDir.x, dist));
+	vPoint.y = (s32)(vLine[0].y + mulf32(vLineDir.y, dist));
+	vPoint.z = (s32)(vLine[0].z + mulf32(vLineDir.z, dist));
 	*realDist=dist;
 
 	return vPoint;								// Return the intersection point
@@ -654,7 +647,7 @@ vect3D IntersectionPoint(vect3D vNormal, vect3D* vLine, int32 distance, int32 *r
 bool InsidePolygon(vect3D vIntersection, vect3D* Poly, long verticeCount)
 {
 	// const double MATCH_FACTOR = 0.9999;		// Used to cover up the error in floating point
-	int32 Angle=0;						// Initialize the angle
+	s32 Angle=0;						// Initialize the angle
 	vect3D vA, vB;						// Create temp vectors
 	
 	int i;
@@ -680,7 +673,7 @@ bool InsidePolygon(vect3D vIntersection, vect3D* Poly, long verticeCount)
 /////
 /////////////////////////////////// INTERSECTED POLYGON \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*
 
-bool IntersectedPolygon(vect3D* vPoly, vect3D* vLine, int verticeCount, int32* originDistance, int32 *realDist)
+bool IntersectedPolygon(vect3D* vPoly, vect3D* vLine, int verticeCount, s32* originDistance, s32 *realDist)
 {
 	vect3D vNormal;
 
@@ -713,7 +706,7 @@ bool IntersectedPolygon(vect3D* vPoly, vect3D* vLine, int verticeCount, int32* o
 	return false;								// There was no collision, so return false
 }
 
-vect3D ClosestPointOnLine(vect3D vA, vect3D vD, int length, int32* dist, vect3D vPoint)
+vect3D ClosestPointOnLine(vect3D vA, vect3D vD, int length, s32* dist, vect3D vPoint)
 {
 	// This function takes a line segment, vA to vB, then a point, vPoint.
 	// We want to find the closet point on the line segment to our vPoint
@@ -766,11 +759,11 @@ vect3D ClosestPointOnLine(vect3D vA, vect3D vD, int length, int32* dist, vect3D 
     vect3D vVector2 = vD; //vD direction du segment, normé
 
 	// Use the distance formula to find the distance of the line segment (or magnitude)
-    int32 d = inttof32(length);
+    s32 d = inttof32(length);
 
 	// Using the dot product, we project the vVector1 onto the vector vVector2.
 	// This essentially gives us the distance from our projected vector from vA.
-    int32 t = Dot(vVector2, vVector1);
+    s32 t = Dot(vVector2, vVector1);
 	*dist=t;
 
 	// If our projected distance from vA, "t", is less than or equal to 0, it must

@@ -4,17 +4,6 @@
 #include "game/pcx_types.h"
 
 #define MAX_TEX 128
-#define BANKS vramBanks
-
-u8 vramBanks;
-
-typedef struct
-{
-	size_t s_total, s_used, s_free;
-	void* addr;
-	int num_t;
-}VRAM_bank;
-
 #ifndef MTL_IMG_TYPEDEF
 #define MTL_IMG_TYPEDEF
 typedef struct MTL_img MTL_img;
@@ -33,10 +22,7 @@ struct MTL_img
 	bool used;
 };
 
-VRAM_bank Bank[4];
-VRAM_bank PalBank;
-
-MTL_img Texture[MAX_TEX];
+extern MTL_img Texture[MAX_TEX];
 
 
 static inline void Game_FastBind(MTL_img *mtl)
@@ -69,7 +55,7 @@ void Game_InitVramBanks(u8 banks);
 void Game_GetVramStatus();
 void Texture_Unbind();
 void Texture_AddToBank(MTL_img *mtl, u8* data, int b);
-void Texture_SetParameter(MTL_img *mtl, uint8 sizeX, uint8 sizeY, const uint32* addr, GL_TEXTURE_TYPE_ENUM mode, uint32 param);
+void Texture_SetParameter(MTL_img *mtl, u8 sizeX, u8 sizeY, const u32* addr, GL_TEXTURE_TYPE_ENUM mode, u32 param);
 void* Texture_GetTexAddress(MTL_img *mtl);
 void Palette_AddToBank(MTL_img *mtl, u16* data, size_t size);
 void Palette_Bind(MTL_img *mtl);

@@ -10,6 +10,14 @@
 #define LOGOSIZE 96
 #define sunmacro(a,b) (((a)<(b))?(0):(a))
 
+typedef struct
+{
+	vect3D angle;
+	u8 size, shiny;
+} star_struct;
+
+static star_struct stars[STARS];
+
 u32* starsList;
 
 void initStars(void)

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Complexity Cleanup"
+  short_description: "Reduce complexity by reshaping responsibilities"
+  default_prompt: "Use $complexity-cleanup to diagnose high-complexity symbols and plan a behavior-preserving cleanup."

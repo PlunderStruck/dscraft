@@ -179,9 +179,9 @@ void Game_Init(void)
 	testBuffer=false;
 }
 
-void SetRegCapture(bool enable, uint8 srcBlend, uint8 destBlend, uint8 bank, uint8 offset, uint8 size, uint8 source, uint8 srcOffset)
+void SetRegCapture(bool enable, u8 srcBlend, u8 destBlend, u8 bank, u8 offset, u8 size, u8 source, u8 srcOffset)
 {
-	uint32 value=0;
+	u32 value=0;
 
 	if(enable)value|=1 << 31; // 31 is enable
 	value|=0 << 29; // 29-30 seems to have something to do with the blending   //3

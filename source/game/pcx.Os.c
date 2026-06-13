@@ -31,51 +31,31 @@
 #include "engine/files.h"
 #include "game/pcx_types.h"
 
-int fileptr, filesize;
-
-static void
-ReadPCX1bit (FILE *fp, const struct pcx_header_t *hdr,
-	     struct gl_texture_t *texinfo)
+#pragma pack(1)
+struct pcx_header_t
 {
-  int y, i, bytes;
-  int colorIndex;
-  int rle_count = 0, rle_value = 0;
-  u8 *ptr = texinfo->texels;
+  u8 manufacturer;
+  u8 version;
+  u8 encoding;
+  u8 bitsPerPixel;
 
-  for (y = 0; y < texinfo->height; ++y)
-    {
-      ptr = &texinfo->texels[(texinfo->height - (y + 1)) * texinfo->width * 3];
-      bytes = hdr->bytesPerScanLine;
+  u16 xmin, ymin;
+  u16 xmax, ymax;
+  u16 horzRes, vertRes;
 
-      /* Decode line number y */
-      while (bytes--)
-	{
-	  if (rle_count == 0)
-	    {
-	      if ( (rle_value = fgetc (fp)) < 0xc0)
-		{
-		  rle_count = 1;
-		}
-	      else
-		{
-		  rle_count = rle_value - 0xc0;
-		  rle_value = fgetc (fp);
-		}
-	    }
+  u8 palette[48];
+  u8 reserved;
+  u8 numColorPlanes;
 
-	  rle_count--;
+  u16 bytesPerScanLine;
+  u16 paletteType;
+  u16 horzSize, vertSize;
 
-	  for (i = 7; i >= 0; --i, ptr += 3)
-	    {
-	      colorIndex = ((rle_value & (1 << i)) > 0);
+  u8 padding[54];
+};
+#pragma pack(4)
 
-	      ptr[0] = hdr->palette[colorIndex * 3 + 0];
-	      ptr[1] = hdr->palette[colorIndex * 3 + 1];
-	      ptr[2] = hdr->palette[colorIndex * 3 + 2];
-	    }
-	}
-    }
-}
+int fileptr, filesize;
 
 static void
 ReadPCX4bits (u8 *buffer, const struct pcx_header_t *hdr,
@@ -286,7 +266,7 @@ struct gl_texture_t * ReadPCXFile (const char *filename, char* directory)
   /* Open image file */
   // fp = fopen (filename, "rb");
   // fp = DS_OpenFile(filename, directory, false, true);
-  buffer = DS_OpenFile(filename, directory, true, true);
+  buffer = DS_OpenFile((char*)filename, (char*)directory, true, true);
   filesize=lastSize;
   fileptr=0;
   if (!buffer)

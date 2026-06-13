@@ -103,8 +103,7 @@ void* DS_OpenFile (char* filename, char* dir, bool bufferize, bool binary)
 void* DS_OpenFile2 (char* filename, char* dir, bool binary)
 {
 	char path[255];getcwd(path,255);
-	int r=chdir(dir);
-	if(strlen(dir)<=0)r=-1;
+	if(strlen(dir)>0)chdir(dir);
 	FILE* file;
 	DS_Debug("opening %s...",filename);
 	

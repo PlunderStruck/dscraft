@@ -47,6 +47,29 @@
 #define SAVECOL (256-11)
 #define INVCOL (256-12)
 
+#define MAXITEMS 64
+#define MAXSLOTS 64
+
+typedef struct
+{
+	vect3D position;
+	u8 id, type;
+	s8 slot;
+	bool used;
+} item_struct;
+
+typedef struct
+{
+	vect3D position;
+	s8 id;
+	bool used;
+} slot_struct;
+
+static u8 usedSprites;
+static item_struct items[MAXITEMS];
+static slot_struct slots[MAXSLOTS];
+bool invOpen, overButtons;
+
 u8 itemBar[]={1,3,4,13,6,7,8,11,12}; //water test
 // u8 itemBar[]={1,3,4,13,6,7,40,11,12}; //ladder test
 // u8 itemBar[]={1,3,4,13,6,7,DOORTYPE,11,12}; //door test
@@ -122,6 +145,20 @@ void initItemBar(void)
 	}
 }
 
+bool getItemBlockForSlot(u8 slot, u8* block)
+{
+	int i;
+	for(i=0;i<MAXITEMS;i++)
+	{
+		if(items[i].used && items[i].slot==slot)
+		{
+			*block=items[i].type;
+			return true;
+		}
+	}
+	return false;
+}
+
 void initInventory(void)
 {
 	int i, j;
@@ -149,7 +186,7 @@ void initInventory(void)
 
 void loadInterface(char* filename, u8 prio)
 {
-	int i,x,y;
+	int x,y;
 	
 	// u8* buffer=DS_OpenFile(filename, "", true, true);
 	

@@ -55,7 +55,7 @@ int main(int argc, char **argv)
 	u8 *buffer;
 	buffer=DS_OpenFile("spalsh1.pcx", "", true, true);
 	sImage pcx; 
-	int t=loadPCX((u8*)buffer, &pcx);
+	loadPCX((u8*)buffer, &pcx);
 
 
 	dmaCopy(pcx.image.data8, bgGetGfxPtr(bg3), 256*192);

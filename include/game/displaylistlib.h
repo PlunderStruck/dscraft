@@ -3,7 +3,7 @@
 
 #define DEFAULT_TEXTURE_SIZE_DL    TEXTURE_SIZE_128
 
-u32 glNormalDL(uint32 normal);
+u32 glNormalDL(u32 normal);
 
 u32 glVertexPackedDL(u32 packed);
 

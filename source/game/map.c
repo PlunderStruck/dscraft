@@ -15,6 +15,7 @@
 
 // int cullMagic;
 u16 cullMagic;
+bool testBuffer;
 u8 fsFormat;
 
 
@@ -41,14 +42,14 @@ void initLightMap(void)
 	#endif
 }
 
-vect3D getPointBlockPos(map_struct* m, int32 i, int32 j, int32 k)
+vect3D getPointBlockPos(map_struct* m, s32 i, s32 j, s32 k)
 {
 	return (vect3D){(i+(tilesize<<6)*SCALEFACTOR+(SUPERCLUSTERSIZE*CLUSTERSIZE*rTilesize2)/2)/(rTilesize2)+m->offset.x*CLUSTERSIZE,
 	(j+(tilesize<<6)*SCALEFACTOR+(SUPERCLUSTERSIZE*CLUSTERSIZE*rTilesize2)/2)/(rTilesize2)+m->offset.y*CLUSTERSIZE,
 	(k+(tilesize<<6)*SCALEFACTOR+(m->size.z*rTilesize2)/2)/(rTilesize2)+m->offset.z*CLUSTERSIZE};
 }
 
-u8 getPointBlock(map_struct* m, int32 i, int32 j, int32 k)
+u8 getPointBlock(map_struct* m, s32 i, s32 j, s32 k)
 {
 	i=(i+(tilesize<<6)*SCALEFACTOR+(SUPERCLUSTERSIZE*CLUSTERSIZE*rTilesize2)/2)/(rTilesize2)+m->offset.x*CLUSTERSIZE;
 	j=(j+(tilesize<<6)*SCALEFACTOR+(SUPERCLUSTERSIZE*CLUSTERSIZE*rTilesize2)/2)/(rTilesize2)+m->offset.y*CLUSTERSIZE;
@@ -74,12 +75,10 @@ void removeWaterFace(map_struct* m, int i, int j, int k, u8 face)
 {
 	vect3D clusterCoord=getCluster(m,i,j,k);
 	quadList_struct* ql=&m->superCluster[clusterCoord.x-m->offset.x][clusterCoord.y-m->offset.y]->cluster[clusterCoord.z-m->offset.z].specialList;
-	u8 type=*getBlockP(m,i,j,k);
 	quad_struct* oq=ql->first;
 	quad_struct* q;
 	if(oq)q=oq->next;
 	else q=NULL;
-	int i1=i,j1=j,k1=k;
 	i%=CLUSTERSIZE;
 	j%=CLUSTERSIZE;
 	k%=CLUSTERSIZE;
@@ -418,10 +417,10 @@ void initLightTable(void) //ADD DIRECTION
 			{
 				for(k=-8;k<=7;k++)
 				{
-					int32 length=sqrtf32(inttof32(i*i+j*j+k*k));
+					s32 length=sqrtf32(inttof32(i*i+j*j+k*k));
 					vect3D vec=(vect3D){-divf32(inttof32(i),(length)),-divf32(inttof32(j),(length)),-divf32(inttof32(k),(length))};
 					// NOGBA("%f, %f, %f : %f",f32tofloat(vec.x),f32tofloat(vec.y),f32tofloat(vec.z),f32tofloat(mulf32(vec.x,vec.x)+mulf32(vec.y,vec.y)+mulf32(vec.z,vec.z)));
-					int32 ps=max(mulf32(normal.x,vec.x)+mulf32(normal.y,vec.y)+mulf32(normal.z,vec.z),0);
+					s32 ps=max(mulf32(normal.x,vec.x)+mulf32(normal.y,vec.y)+mulf32(normal.z,vec.z),0);
 					// NOGBA("%f",f32tofloat(ps));
 					// lightTable[(i+6)*6+(j+6)*6*13+(k+6)*6*13*13+d]=f32toint(ps*(max(31-((i)*(i)+(j)*(j)+(k)*(k)),0)));
 					// lightTable[((i+8)+(j+8)*16+(k+8)*16*16)*8+d]=f32toint(ps*(max(31-((i)*(i)+(j)*(j)+(k)*(k)),0)));
@@ -821,7 +820,6 @@ void makeIcon(u16* buff, int id, int i1, int j1, int i2, int j2)
 void loadBlockTextures(bool spr, bool tex)
 {
 	int i, j;
-	u8 k, l;
 	if(tex)
 	{
 		waterTexture=Game_CreateTextureAlpha("12.pcx", "textures", 27);
@@ -1155,7 +1153,6 @@ void adjustBlockLight(map_struct* m, int i, int j, int k)
 			|| k>getHighest(m, i, j+1)
 			|| k>getHighest(m, i, j-1));
 	NOGBA("ls : %d (%d %d %d %d %d)",ls,getHighest(m, i, j),getHighest(m, i+1, j),getHighest(m, i-1, j),getHighest(m, i, j+1),getHighest(m, i, j-1));
-	int i1=i,j1=j,k1=k;
 	i%=CLUSTERSIZE;
 	j%=CLUSTERSIZE;
 	k%=CLUSTERSIZE;
@@ -1306,7 +1303,7 @@ void processLight(map_struct* m, int i, int j, int k, const vect3D clusterCoord)
 	u16 x1=max(clusterCoord.x-1,m->offset.x),x2=min(clusterCoord.x+2,m->offset.x+SUPERCLUSTERSIZE-1);
 	u16 y1=max(clusterCoord.y-1,m->offset.y),y2=min(clusterCoord.y+2,m->offset.y+SUPERCLUSTERSIZE-1);
 	u16 z1=max(clusterCoord.z-1,0),z2=min(clusterCoord.z+2,m->clusterSize.z);
-	NOGBA("hoho : %d %d %d %d vs %d %d",x1,x2,y1,y2,clusterCoord.x,clusterCoord.y);
+	NOGBA("hoho : %d %d %d %d vs %d %d",x1,x2,y1,y2,(int)clusterCoord.x,(int)clusterCoord.y);
 	for(x=x1;x<x2;x++)
 	{
 		for(y=y1;y<y2;y++)
@@ -1404,7 +1401,7 @@ void changeBlock(map_struct* m, int i, int j, int k, u8 type)
 			u16 x1=max(clusterCoord.x-1,m->offset.x),x2=min(clusterCoord.x+2,m->offset.x+SUPERCLUSTERSIZE-1);
 			u16 y1=max(clusterCoord.y-1,m->offset.y),y2=min(clusterCoord.y+2,m->offset.y+SUPERCLUSTERSIZE-1);
 			u16 z1=max(clusterCoord.z-1,0),z2=min(clusterCoord.z+2,m->clusterSize.z);
-			NOGBA("hoho : %d %d %d %d vs %d %d",x1,x2,y1,y2,clusterCoord.x,clusterCoord.y);
+			NOGBA("hoho : %d %d %d %d vs %d %d",x1,x2,y1,y2,(int)clusterCoord.x,(int)clusterCoord.y);
 			for(x=x1;x<x2;x++)
 			{
 				for(y=y1;y<y2;y++)
@@ -1522,8 +1519,6 @@ void changeBlock(map_struct* m, int i, int j, int k, u8 type)
 			addQuad(ql, m, 7, 31, 0, m->superCluster[clusterCoord.x-m->offset.x][clusterCoord.y-m->offset.y]->data, i, j, k);
 			addQuad(ql, m, 8, 31, 0, m->superCluster[clusterCoord.x-m->offset.x][clusterCoord.y-m->offset.y]->data, i, j, k);
 			addQuad(ql, m, 9, 31, 0, m->superCluster[clusterCoord.x-m->offset.x][clusterCoord.y-m->offset.y]->data, i, j, k);
-			
-			int cn=0;
 			PROF_START();
 			processLight(m,i,j,k,clusterCoord);
 			PROF_END(TESTVALUE);
@@ -2379,7 +2374,7 @@ void loadTestMap(map_struct* m)
 		m->offset.y=m->header->spawnY-(SUPERCLUSTERSIZE/2)*CLUSTERSIZE;
 		m->offset.y=(m->offset.y-(m->offset.y%(CLUSTERSIZE)))/CLUSTERSIZE;
 	}
-	NOGBA("offset ! %d %d",m->offset.x,m->offset.y);
+	NOGBA("offset ! %d %d",(int)m->offset.x,(int)m->offset.y);
 	for(j8=0;j8<32;j8++)
 	{
 		for(i8=0;i8<32;i8++)
@@ -2561,7 +2556,6 @@ void updateLightMap(void)
 		u8 l=min(LIGHTAMBIENT2+(lightSun[d]+(i&127)),31);
 		*lm=RGB15(l,l,l);
 		lm++;
-		i++;
 		if(l==31)break;
 	}while(i);
 	for(i=i;i;i++)*(lm++)=RGB15(31,31,31);
@@ -2629,13 +2623,11 @@ void drawQuadList(map_struct* m, quadList_struct* ql, u16 x, u16 y, u16 z)
 {
 	if(!ql->count)return;
 	quad_struct* q=ql->first;
-	int i=0;
 	glPushMatrix();
 	glTranslatef32(x*bsize,y*bsize,z*bsize);
 	glBegin(GL_QUADS);
 		while(q)
 		{
-			i++;
 			drawTestQuadOpt(m, q);
 			q=q->next;
 		}
@@ -2677,7 +2669,7 @@ void renderClusterList(map_struct* m, int x, int y, int z)
 			c->wall&=(d1)|(d2<<1)|(d3<<2);
 		}
 	}
-	NOGBA("%d %d %d vs %d %d %d : %d",x,y,z,x-m->offset.x,y-m->offset.y,z-m->offset.z,c->wall);
+	NOGBA("%d %d %d vs %d %d %d : %d",x,y,z,(int)(x-m->offset.x),(int)(y-m->offset.y),(int)(z-m->offset.z),c->wall);
 }
 
 void drawTestCluster(cluster_struct* c, int i, int j, int k)

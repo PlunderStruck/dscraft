@@ -4,6 +4,20 @@
 #include "engine/memory.h"
 #include "game/textures.h"
 
+#define BANKS vramBanks
+
+typedef struct
+{
+	size_t s_total, s_used, s_free;
+	void* addr;
+	int num_t;
+} VRAM_bank;
+
+static u8 vramBanks;
+static VRAM_bank Bank[4];
+static VRAM_bank PalBank;
+MTL_img Texture[MAX_TEX];
+
 void Texture_GetGlWL(u16 width, u16 height, u8* w, u8* l)
 {
 	switch(width)
@@ -88,122 +102,104 @@ void Game_InitTextures()
 	}
 }
 
-MTL_img* Game_CreateTexture(char* filename, char* directory)
+static MTL_img* Game_FindFreeTexture()
 {
-	int i, j;
-	FILE* file=DS_OpenFile(filename, directory, false, true);
-	if(file==NULL)return NULL;
-	else fclose(file);
+	int i;
 	for(i=0;i<MAX_TEX;i++)
 	{
-		if(!Texture[i].used)
+		if(!Texture[i].used)return &Texture[i];
+	}
+	return NULL;
+}
+
+static MTL_img* Game_FindLoadedTexture(char* filename)
+{
+	int i;
+	for(i=0;i<MAX_TEX;i++)
+	{
+		if(Texture[i].used && Texture[i].name && !strcmp(Texture[i].name,filename))
 		{
-			for(j=0;j<MAX_TEX;j++){if(Texture[j].used && Texture[j].name){if(!strcmp(Texture[j].name,filename)){NOGBA("STOP !!!");return &Texture[j];}}}
-			Game_LoadTexturePCX(filename, directory, &Texture[i]);
+			NOGBA("STOP !!!");
 			return &Texture[i];
 		}
 	}
 	return NULL;
+}
+
+static bool Game_TextureFileExists(char* filename, char* directory)
+{
+	FILE* file=DS_OpenFile(filename, directory, false, true);
+	if(file==NULL)return false;
+	fclose(file);
+	return true;
+}
+
+static MTL_img* Game_RequestTextureSlot(char* filename, char* directory, bool* shouldLoad)
+{
+	MTL_img* texture;
+	MTL_img* loadedTexture;
+	*shouldLoad=false;
+	if(!Game_TextureFileExists(filename, directory))return NULL;
+	texture=Game_FindFreeTexture();
+	if(texture==NULL)return NULL;
+	loadedTexture=Game_FindLoadedTexture(filename);
+	if(loadedTexture)return loadedTexture;
+	*shouldLoad=true;
+	return texture;
+}
+
+MTL_img* Game_CreateTexture(char* filename, char* directory)
+{
+	bool shouldLoad;
+	MTL_img* texture=Game_RequestTextureSlot(filename, directory, &shouldLoad);
+	if(texture && shouldLoad)Game_LoadTexturePCX(filename, directory, texture);
+	return texture;
 }
 
 MTL_img* Game_CreateTextureAlpha(char* filename, char* directory, u8 alpha)
 {
-	int i, j;
-	FILE* file=DS_OpenFile (filename, directory, false, true);
-	if(file==NULL)return NULL;
-	else fclose(file);
-	for(i=0;i<MAX_TEX;i++)
-	{
-		if(!Texture[i].used)
-		{
-			for(j=0;j<MAX_TEX;j++){if(Texture[j].used && Texture[j].name){if(!strcmp(Texture[j].name,filename)){NOGBA("STOP !!!");return &Texture[j];}}}
-			Game_LoadAlphaTexture(filename, directory, &Texture[i], alpha);
-			return &Texture[i];
-		}
-	}
-	return NULL;
+	bool shouldLoad;
+	MTL_img* texture=Game_RequestTextureSlot(filename, directory, &shouldLoad);
+	if(texture && shouldLoad)Game_LoadAlphaTexture(filename, directory, texture, alpha);
+	return texture;
 }
 
 MTL_img* Game_CreateAlphaMask(char* filename, char* directory)
 {
-	int i, j;
-	FILE* file=DS_OpenFile (filename, directory, false, true);
-	if(file==NULL)return NULL;
-	else fclose(file);
-	for(i=0;i<MAX_TEX;i++)
-	{
-		if(!Texture[i].used)
-		{
-			for(j=0;j<MAX_TEX;j++){if(Texture[j].used && Texture[j].name){if(!strcmp(Texture[j].name,filename)){NOGBA("STOP !!!");return &Texture[j];}}}
-			Game_LoadAlphaMask(filename, directory, &Texture[i]);
-			return &Texture[i];
-		}
-	}
-	return NULL;
+	bool shouldLoad;
+	MTL_img* texture=Game_RequestTextureSlot(filename, directory, &shouldLoad);
+	if(texture && shouldLoad)Game_LoadAlphaMask(filename, directory, texture);
+	return texture;
 }
 
 MTL_img* Game_CreateTextureAlphaMask(char* filename, char* directory, u8* alpha)
 {
-	int i, j;
-	FILE* file=DS_OpenFile (filename, directory, false, true);
-	if(file==NULL)return NULL;
-	else fclose(file);
-	for(i=0;i<MAX_TEX;i++)
-	{
-		if(!Texture[i].used)
-		{
-			for(j=0;j<MAX_TEX;j++){if(Texture[j].used && Texture[j].name){if(!strcmp(Texture[j].name,filename)){NOGBA("STOP !!!");return &Texture[j];}}}
-			Game_LoadAlphaMaskTexture(filename, directory, &Texture[i], alpha);
-			return &Texture[i];
-		}
-	}
-	return NULL;
+	bool shouldLoad;
+	MTL_img* texture=Game_RequestTextureSlot(filename, directory, &shouldLoad);
+	if(texture && shouldLoad)Game_LoadAlphaMaskTexture(filename, directory, texture, alpha);
+	return texture;
 }
 
 MTL_img* Game_CreateMaskedTexture(char* filename, char* directory)
 {
-	int i, j;
-	FILE* file=DS_OpenFile (filename, directory, false, true);
-	if(file==NULL)return NULL;
-	else fclose(file);
-	for(i=0;i<MAX_TEX;i++)
-	{
-		if(!Texture[i].used)
-		{
-			for(j=0;j<MAX_TEX;j++){if(Texture[j].used && Texture[j].name){if(!strcmp(Texture[j].name,filename)){NOGBA("STOP !!!");return &Texture[j];}}}
-			Game_LoadMaskedTexture(filename, directory, &Texture[i]);
-			return &Texture[i];
-		}
-	}
-	return NULL;
+	bool shouldLoad;
+	MTL_img* texture=Game_RequestTextureSlot(filename, directory, &shouldLoad);
+	if(texture && shouldLoad)Game_LoadMaskedTexture(filename, directory, texture);
+	return texture;
 }
 
 MTL_img* Game_CreateTextureBuffer(u8* buffer, u16* buffer2, u16 x, u16 y)
 {
-	int i;
-	for(i=0;i<MAX_TEX;i++)
-	{
-		if(!Texture[i].used)
-		{
-			Game_LoadTextureBuffer(buffer, buffer2, x, y, &Texture[i]);
-			return &Texture[i];
-		}
-	}
-	return NULL;
+	MTL_img* texture=Game_FindFreeTexture();
+	if(texture)Game_LoadTextureBuffer(buffer, buffer2, x, y, texture);
+	return texture;
 }
 
 MTL_img* Game_CreateTextureBuffer16(u16* buffer, u16 x, u16 y, bool cpy)
 {
-	int i;
-	for(i=0;i<MAX_TEX;i++)
-	{
-		if(!Texture[i].used)
-		{
-			Game_LoadTextureBuffer16(buffer, x, y, &Texture[i], true, cpy);
-			return &Texture[i];
-		}
-	}
-	return NULL;
+	MTL_img* texture=Game_FindFreeTexture();
+	if(texture)Game_LoadTextureBuffer16(buffer, x, y, texture, true, cpy);
+	return texture;
 }
 
 void Game_GetVramStatus()
@@ -237,9 +233,9 @@ void Texture_ReserveInBank(MTL_img *mtl, u8* data, int b)
 }
 
 //function from libnds
-void Texture_SetParameter(MTL_img *mtl, uint8 sizeX, uint8 sizeY, const uint32* addr, GL_TEXTURE_TYPE_ENUM mode, uint32 param)
+void Texture_SetParameter(MTL_img *mtl, u8 sizeX, u8 sizeY, const u32* addr, GL_TEXTURE_TYPE_ENUM mode, u32 param)
 {
-	mtl->param = param | (sizeX << 20) | (sizeY << 23) | (((uint32)addr >> 3) & 0xFFFF) | (mode << 26);
+	mtl->param = param | (sizeX << 20) | (sizeY << 23) | (((u32)addr >> 3) & 0xFFFF) | (mode << 26);
 }
 
 void* Texture_GetTexAddress(MTL_img *mtl)
@@ -278,12 +274,12 @@ void Palette_AddToBank(MTL_img *mtl, u16* data, size_t size)
 
 void Palette_Bind(MTL_img *mtl)
 {
-		if(mtl && mtl->pal)GFX_PAL_FORMAT = ((uint32)mtl->pal)>>(4);
+		if(mtl && mtl->pal)GFX_PAL_FORMAT = ((u32)mtl->pal)>>(4);
 }
 
 void Palette_Bind4(MTL_img *mtl)
 {
-		if(mtl && mtl->pal)GFX_PAL_FORMAT = ((uint32)mtl->pal)>>(4-1);
+		if(mtl && mtl->pal)GFX_PAL_FORMAT = ((u32)mtl->pal)>>(4-1);
 }
 
 void Texture_Bind(MTL_img *mtl)
@@ -301,7 +297,7 @@ void Texture_Unbind()
 {
 	int param;
 	bool transp=false;
-	uint8 texX=0, texy=0;
+	u8 texX=0, texy=0;
 	int i, j;
 	u8 *buffer, *b;
 	
@@ -331,7 +327,7 @@ void Texture_Unbind()
 		Texture_GetGlWL(mtl->width, mtl->height, &texX, &texy);
 		param=TEXGEN_TEXCOORD | GL_TEXTURE_WRAP_S | GL_TEXTURE_WRAP_T | (1<<29);
 		Texture_SetParameter(mtl, texX, texy, mtl->addr, GL_RGB8_A5, param);
-		mtl->palbind = ((uint32)mtl->pal)>>(4);
+		mtl->palbind = ((u32)mtl->pal)>>(4);
 
 	Texture_AddToBank(mtl, pcxt->texels, mtl->bank);
 	
@@ -377,7 +373,7 @@ void Texture_Unbind()
 
 	Texture_AddToBank(mtl, b, mtl->bank);
 	
-	mtl->palbind = ((uint32)mtl->pal)>>(4);
+	mtl->palbind = ((u32)mtl->pal)>>(4);
 	// imageDestroy(&pcx);
 	// free(b);
 }*/
@@ -386,7 +382,7 @@ void Game_LoadAlphaMask(char* filename, char* directory, MTL_img *mtl)
 {
 	int param;
 	bool transp=false;
-	uint8 texX=0, texy=0;
+	u8 texX=0, texy=0;
 	int i, j;
 	u8 *buffer, *b;
 	sImage pcx;
@@ -432,7 +428,7 @@ void Game_LoadAlphaMask(char* filename, char* directory, MTL_img *mtl)
 
 	Texture_AddToBank(mtl, b, mtl->bank);
 	
-	mtl->palbind = ((uint32)mtl->pal)>>(4);
+	mtl->palbind = ((u32)mtl->pal)>>(4);
 	imageDestroy(&pcx);
 	free(b);
 }
@@ -441,7 +437,7 @@ void Game_LoadAlphaMaskTexture(char* filename, char* directory, MTL_img *mtl, u8
 {
 	int param;
 	bool transp=false;
-	uint8 texX=0, texy=0;
+	u8 texX=0, texy=0;
 	int i, j;
 	u8 *buffer, *b;
 	sImage pcx;
@@ -484,7 +480,7 @@ void Game_LoadAlphaMaskTexture(char* filename, char* directory, MTL_img *mtl, u8
 
 	Texture_AddToBank(mtl, b, mtl->bank);
 	
-	mtl->palbind = ((uint32)mtl->pal)>>(4);
+	mtl->palbind = ((u32)mtl->pal)>>(4);
 	imageDestroy(&pcx);
 	free(b);
 }
@@ -493,7 +489,7 @@ void Game_LoadAlphaTexture(char* filename, char* directory, MTL_img *mtl, u8 alp
 {
 	int param;
 	bool transp=false;
-	uint8 texX=0, texy=0;
+	u8 texX=0, texy=0;
 	int i, j;
 	u8 *buffer, *b;
 	sImage pcx;
@@ -536,7 +532,7 @@ void Game_LoadAlphaTexture(char* filename, char* directory, MTL_img *mtl, u8 alp
 
 	Texture_AddToBank(mtl, b, mtl->bank);
 	
-	mtl->palbind = ((uint32)mtl->pal)>>(4);
+	mtl->palbind = ((u32)mtl->pal)>>(4);
 	imageDestroy(&pcx);
 	free(b);
 }
@@ -545,7 +541,7 @@ void Game_LoadMaskedTexture(char* filename, char* directory, MTL_img *mtl)
 {
 	int param;
 	bool transp=false;
-	uint8 texX=0, texy=0;
+	u8 texX=0, texy=0;
 	int i, j;
 	u8 *buffer, *buffer2, *b;
 	sImage pcx, pcx2;
@@ -603,7 +599,7 @@ void Game_LoadMaskedTexture(char* filename, char* directory, MTL_img *mtl)
 void Game_GenerateDegrad(MTL_img *mtl)
 {
 	int param;
-	uint8 texX=8, texy=32;
+	u8 texX=8, texy=32;
 	int i, j;
 	u8 buffer[texX*texy];
 	u16 palette[8];
@@ -640,7 +636,7 @@ void Game_GenerateDegrad(MTL_img *mtl)
 void Game_LoadTextureBuffer(u8* buffer, u16* buffer2, u16 x, u16 y, MTL_img *mtl)
 {
 	int param;
-	uint8 texX=0, texy=0;
+	u8 texX=0, texy=0;
 	
 	mtl->used=true;
 
@@ -663,7 +659,7 @@ void Game_LoadTextureBuffer(u8* buffer, u16* buffer2, u16 x, u16 y, MTL_img *mtl
 void Game_LoadTextureBuffer16(u16* buffer, u16 x, u16 y, MTL_img *mtl, bool genaddr, bool cpy)
 {
 	int param;
-	uint8 texX=0, texy=0;
+	u8 texX=0, texy=0;
 	
 	mtl->used=true;
 
@@ -689,7 +685,7 @@ void Game_LoadTexturePCX(char* filename, char* directory, MTL_img *mtl)
 	int param;
 	// sImage pcx; 
 	// u8 *buffer;
-	uint8 texX=0, texy=0;
+	u8 texX=0, texy=0;
 	
 	mtl->used=true;
 	mtl->name=DS_mAlloc(strlen(filename)+1,&Game_State);
@@ -722,7 +718,7 @@ void Game_LoadTexturePCX(char* filename, char* directory, MTL_img *mtl)
 			Texture_GetTexAddress(mtl);
 			Texture_GetGlWL(mtl->width, mtl->height, &texX, &texy);
 			Texture_SetParameter(mtl, texX, texy, mtl->addr, GL_RGB16, param);
-			mtl->palbind = ((uint32)mtl->pal)>>(4-1);
+			mtl->palbind = ((u32)mtl->pal)>>(4-1);
 			break;
 		case 8:
 			Palette_AddToBank(mtl, pcxt->palette, 256*2);
@@ -730,7 +726,7 @@ void Game_LoadTexturePCX(char* filename, char* directory, MTL_img *mtl)
 			Texture_GetTexAddress(mtl);
 			Texture_GetGlWL(mtl->width, mtl->height, &texX, &texy);
 			Texture_SetParameter(mtl, texX, texy, mtl->addr, GL_RGB256, param);
-			mtl->palbind = ((uint32)mtl->pal)>>(4);
+			mtl->palbind = ((u32)mtl->pal)>>(4);
 			break;
 	}
 
@@ -746,11 +742,9 @@ void Game_LoadTexturePCX(char* filename, char* directory, MTL_img *mtl)
 
 void* Game_LoadPalettePCX(char* filename, char* directory)
 {
-	int param;
 	// sImage pcx; 
 	// u8 *buffer;
-	uint8 texX=0, texy=0;
-	MTL_img mtl;
+	MTL_img mtl={0};
 	
 	DS_Debug("loading %s.\n",filename);
 	
@@ -786,7 +780,7 @@ void* Game_LoadPalettePCX(char* filename, char* directory)
 /*void Game_GenerateRipple(MTL_img *mtl)
 {
 	int param;
-	uint8 texX=64, texy=64;
+	u8 texX=64, texy=64;
 	u16 start=300, end=1000;
 	int i, j;
 	u8 buffer[texX*texy];

@@ -3,16 +3,25 @@
 #include "game/textures.h"
 #include "API/font.h"
 
-void setFont(font* f)
+typedef struct
+{
+	MTL_img tex;
+	u8 charsize;
+} font;
+
+static font APIfont;
+static font* currentFont;
+
+static void setFont(font* f)
 {
 	currentFont=f;
 }
 
-void loadFont(font* f, u8 charsize)
+static void loadFont(font* f, u8 charsize)
 {
 	int i, j;
 	int param;
-	uint8 texX, texy;
+	u8 texX, texy;
 	u8 buffer[512*64/4];
 	sImage pcx; 
 	u8 *buffer2;
@@ -59,7 +68,12 @@ void loadFont(font* f, u8 charsize)
 	setFont(f);
 }
 
-void drawChar(char c, u16 color, int32 x, int32 y)
+void loadAPIFont(void)
+{
+	loadFont(&APIfont, CHARSIZE);
+}
+
+void drawChar(char c, u16 color, s32 x, s32 y)
 {
 	c-=32;
 	
@@ -96,7 +110,7 @@ void drawChar(char c, u16 color, int32 x, int32 y)
 	glPopMatrix(1);
 }
 
-void drawString(char* s, u16 color, int32 size, int32 x, int32 y)
+void drawString(char* s, u16 color, s32 size, s32 x, s32 y)
 {
 	int n=strlen(s);
 	int i;

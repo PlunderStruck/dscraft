@@ -74,14 +74,14 @@ typedef struct player_struct player_struct;
 #define t3 NORMAL_PACK(32,32,0)
 #define t4 NORMAL_PACK(32,-32,0)
 
-bool testBuffer;
+extern bool testBuffer;
 
 typedef struct
 {
 	u16 sizeX, sizeY;
 	u32 magicVersionNumber;
 	u16 spawnX, spawnY;
-	int32 spawnZ;
+	s32 spawnZ;
 }header_struct;
 
 typedef struct
@@ -479,7 +479,7 @@ void drawTestMapWithPlayer(map_struct* m, player_struct* player, void (*updatePl
 void globalSaveMap(map_struct* m);
 void createTestMap(map_struct* m);
 void translateSuperCluster(map_struct* m, u8 dir);
-vect3D getPointBlockPos(map_struct* m, int32 i, int32 j, int32 k);
-u8 getPointBlock(map_struct* m, int32 i, int32 j, int32 k);
+vect3D getPointBlockPos(map_struct* m, s32 i, s32 j, s32 k);
+u8 getPointBlock(map_struct* m, s32 i, s32 j, s32 k);
 
 #endif

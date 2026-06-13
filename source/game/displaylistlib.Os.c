@@ -65,7 +65,7 @@ void glTexCoordPACKED(u32 uv) {
         dl_packCommandsForDisplayList();
 }
 
-u32 glNormalDL(uint32 normal) {
+u32 glNormalDL(u32 normal) {
     dl_commands_buffer[dl_commands_buffer_filled] = FIFO_NORMAL;
     dl_commands_buffer_filled++;
     dl_attributes_buffer[dl_attributes_buffer_filled] = (u32) normal;

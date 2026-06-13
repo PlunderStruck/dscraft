@@ -113,7 +113,7 @@ export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 #---------------------------------------------------------------------------------
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
-	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+	+@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
  
 #---------------------------------------------------------------------------------
 clean:
@@ -141,6 +141,8 @@ soundbank.bin : $(AUDIOFILES)
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
 	$(bin2o)
+
+template.o controls.o: soundbank.bin.o
  
 -include $(DEPSDIR)/*.d
  

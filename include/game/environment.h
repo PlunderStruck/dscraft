@@ -1,7 +1,7 @@
 #ifndef ENVIRONMENT_9
 #define ENVIRONMENT_9
 
-#include "game/vect3D.h"
+#include "common/general.h"
 
 #ifndef MTL_IMG_TYPEDEF
 #define MTL_IMG_TYPEDEF
@@ -14,14 +14,6 @@ typedef struct MTL_img MTL_img;
 #define STARSIZE 5
 #define DAWNSIZE 256
 #define CLOUDSIZE 511
-
-typedef struct
-{
-	vect3D angle;
-	u8 size, shiny;
-}star_struct;
-
-extern star_struct stars[STARS];
 
 extern MTL_img *cloudTexture, *sunTexture, *moonTexture;
 

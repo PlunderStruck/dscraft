@@ -3,7 +3,7 @@
 
 typedef struct vect3D
 {
-	int32 x, y, z;
+	s32 x, y, z;
 } vect3D;
 
 #endif

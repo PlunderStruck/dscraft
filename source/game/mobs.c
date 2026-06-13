@@ -5,6 +5,7 @@
 #ifdef SURVIVAL
 #define PAS 16
 
+mobList_struct mobList;
 MTL_img* creeperTex;
 
 void initMobs(void)

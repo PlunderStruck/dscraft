@@ -56,7 +56,7 @@ void placeBlock(void)
 		vect3D clusterCoord2=getCluster(m,i,j,k-1);
 		quadList_struct* ql2=&m->superCluster[clusterCoord2.x-m->offset.x][clusterCoord2.y-m->offset.y]->cluster[clusterCoord2.z-m->offset.z].quadList;
 		u8 light;
-		int bid;
+		u32 bid=(i)+(j)*(m)->size.x+(k)*(m)->size.y*(m)->size.x;
 		surface(m, i, j, k, &light);
 		getLight(m, i, j, k, &light, dir);
 		addQuad(ql, m, dir, light, bid, m->superCluster[clusterCoord.x-m->offset.x][clusterCoord.y-m->offset.y]->data, i, j, k);
@@ -99,7 +99,7 @@ void placeBlock(void)
 		vect3D clusterCoord2=getCluster(m,i,j,k-1);
 		quadList_struct* ql2=&m->superCluster[clusterCoord2.x-m->offset.x][clusterCoord2.y-m->offset.y]->cluster[clusterCoord2.z-m->offset.z].quadList;
 		u8 light;
-		int bid;
+		u32 bid=(i)+(j)*(m)->size.x+(k)*(m)->size.y*(m)->size.x;
 		surface(m, i, j, k, &light);
 		getLight(m, i, j, k, &light, dir);
 		addQuad(ql, m, dir, light, bid, m->superCluster[clusterCoord.x-m->offset.x][clusterCoord.y-m->offset.y]->data, i, j, k);
@@ -154,7 +154,7 @@ void placeBlock(void)
 		u32 bid=(i)+(j)*(m)->size.x+(k)*(m)->size.y*(m)->size.x;
 		u8 light=0;
 		surface(m, i, j, k, &light);
-		u8 dir;
+		u8 dir=2;
 		switch(cursorDir)
 		{
 			case 2:
@@ -202,7 +202,7 @@ void placeBlock(void)
 		vect3D clusterCoord2=getCluster(m,i,j,k-1);
 		quadList_struct* ql2=&m->superCluster[clusterCoord2.x-m->offset.x][clusterCoord2.y-m->offset.y]->cluster[clusterCoord2.z-m->offset.z].quadList;
 		u8 light;
-		int bid;
+		u32 bid=(i)+(j)*(m)->size.x+(k)*(m)->size.y*(m)->size.x;
 		surface(m, i, j, k, &light);
 		getLight(m, i, j, k, &light, dir);
 			addQuad(ql, m, dir, light, bid, m->superCluster[clusterCoord.x-m->offset.x][clusterCoord.y-m->offset.y]->data, i, j, k);
@@ -280,8 +280,8 @@ void controlScheme1(void)
 	{
 		if(!(keysDown() & KEY_TOUCH))
 		{
-			int16 dx = thisXY.px - lastXY.px;
-			int16 dy = thisXY.py - lastXY.py;
+			s16 dx = thisXY.px - lastXY.px;
+			s16 dy = thisXY.py - lastXY.py;
 
 			// filtering measurement errors
 			if (dx<20 && dx>-20 && dy<20 && dy>-20)
@@ -292,8 +292,8 @@ void controlScheme1(void)
 				if(dy>-2&&dy<2)
 					dy=0;
 
-					tempAngle.x += degreesToAngle(dy);
-					tempAngle.z += degreesToAngle(dx);
+				tempAngle.x += degreesToAngle(dy);
+				tempAngle.z += degreesToAngle(dx);
 			}
 
 		}
@@ -344,16 +344,7 @@ void controlScheme2(void)
 	{
 		tempCursor++;
 		tempCursor%=9;
-		// NOGBA("cursor : %d => %d (%d)",tempCursor,cursorBlock,slots[testCursor].id);
-		int i;
-		for(i=0;i<MAXITEMS;i++)
-		{
-			if(items[i].used && items[i].slot==tempCursor)
-			{
-				cursorBlock=items[i].type;
-				break;
-			}
-		}
+		getItemBlockForSlot(tempCursor, &cursorBlock);
 	}
 	if(!noclip && (Player.inWater || !Player.vector.z) && (keysDown() & KEY_A)) {Player.vector.z += 850;}
 	if(keysUp() & KEY_R)

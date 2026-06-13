@@ -3,9 +3,9 @@
 
 #include <nds.h>
 
-SpriteEntry D3D_sprites[128];
+extern SpriteEntry D3D_sprites[128];
 
-bool D3D_Screen;
+extern bool D3D_Screen;
 
 void Game_InitD3D();
 void Game_UpdateD3D();
