@@ -50,6 +50,13 @@ void drawLogo(void);
 void setupButtons(filelist_struct* l, u16 index);
 void Menu_SelectScheme(API_Entity* e);
 
+static void Menu_ClearSubDisplayMemory(void)
+{
+	memset(BG_GFX_SUB, 0, 256*256*2);
+	memset(SPRITE_GFX_SUB, 0, 128*1024);
+	oamInit(&oamSub, SpriteMapping_Bmp_1D_128, false);
+}
+
 void RenderScene()
 {
 		bool d3dScreen = D3D_IsScreenActive();
@@ -424,7 +431,8 @@ void Menu_Init(void)
 	vramSetBankG(VRAM_G_LCD);
 	vramSetBankH(VRAM_H_LCD);
 	vramSetBankI(VRAM_I_LCD);
-	
+	Menu_ClearSubDisplayMemory();
+
 	REG_BG2CNT_SUB = BG_BMP16_256x256 | BG_BMP_BASE(0) | BG_PRIORITY(1);
         REG_BG2PA_SUB = 1 << 8;
         REG_BG2PB_SUB = 0;
