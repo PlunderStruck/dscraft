@@ -24,7 +24,9 @@ set, otherwise it builds through the `devkitpro/devkitarm` Docker image.
 `scripts/check-rom-assets.sh` verifies that required NitroFS data, including
 `/dscraft/worlds/small.map`, is packaged into the ROM. The emulator smoke check
 launches `dscraft.nds` in melonDS and confirms the process stays alive after
-basic input.
+basic input, then closes the melonDS process it started. Set
+`MELONDS_KEEP_OPEN=1` when you intentionally want to keep the emulator open
+after the smoke check.
 
 See `docs/architecture/runtime-entrypoints.md` before deleting code that looks
 dead to static analysis.

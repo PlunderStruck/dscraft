@@ -11,16 +11,49 @@ fi
 
 rom_path="$(cd "$(dirname "$rom")" && pwd)/$(basename "$rom")"
 app_path="${MELONDS_APP:-/Applications/melonDS.app}"
+melonds_bin="$app_path/Contents/MacOS/melonDS"
+keep_open="${MELONDS_KEEP_OPEN:-0}"
 
-if [ ! -x "$app_path/Contents/MacOS/melonDS" ]; then
+if [ ! -x "$melonds_bin" ]; then
 	echo "melonDS app not found at $app_path" >&2
 	exit 1
 fi
 
-open -n -a "$app_path" --args "$rom_path"
+input_pid=
+melonds_pid=
+
+terminate_pid() {
+	pid="$1"
+	if [ -z "$pid" ] || ! kill -0 "$pid" >/dev/null 2>&1; then
+		return
+	fi
+	kill "$pid" >/dev/null 2>&1 || true
+	for _ in 1 2 3 4 5 6 7 8 9 10; do
+		if ! kill -0 "$pid" >/dev/null 2>&1; then
+			wait "$pid" >/dev/null 2>&1 || true
+			return
+		fi
+		sleep 0.2
+	done
+	kill -9 "$pid" >/dev/null 2>&1 || true
+	wait "$pid" >/dev/null 2>&1 || true
+}
+
+cleanup() {
+	if [ -n "${input_pid:-}" ] && kill -0 "$input_pid" >/dev/null 2>&1; then
+		terminate_pid "$input_pid"
+	fi
+	if [ "$keep_open" != "1" ] && [ -n "${melonds_pid:-}" ] && kill -0 "$melonds_pid" >/dev/null 2>&1; then
+		terminate_pid "$melonds_pid"
+	fi
+}
+trap cleanup EXIT INT TERM
+
+"$melonds_bin" "$rom_path" >/dev/null 2>&1 &
+melonds_pid=$!
 sleep "$seconds"
 
-if ! pgrep -f "melonDS.*$rom_path" >/dev/null; then
+if ! kill -0 "$melonds_pid" >/dev/null 2>&1; then
 	echo "melonDS did not keep running with $rom_path" >&2
 	exit 1
 fi
@@ -50,12 +83,12 @@ for _ in 1 2 3 4 5; do
 	sleep 1
 done
 if [ -n "${input_pid:-}" ] && kill -0 "$input_pid" >/dev/null 2>&1; then
-	kill "$input_pid" >/dev/null 2>&1 || true
-	wait "$input_pid" >/dev/null 2>&1 || true
+	terminate_pid "$input_pid"
+	input_pid=
 	echo "melonDS smoke input timed out; launch/process checks still passed." >&2
 fi
 
-if ! pgrep -f "melonDS.*$rom_path" >/dev/null; then
+if ! kill -0 "$melonds_pid" >/dev/null 2>&1; then
 	echo "melonDS exited during smoke input." >&2
 	exit 1
 fi
@@ -78,3 +111,8 @@ if melonWindows.isEmpty {
 SWIFT
 
 echo "melonDS smoke OK: $rom_path is running"
+if [ "$keep_open" = "1" ]; then
+	echo "melonDS left open because MELONDS_KEEP_OPEN=1." >&2
+else
+	echo "melonDS smoke cleanup: closing pid $melonds_pid." >&2
+fi
